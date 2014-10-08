@@ -35,7 +35,7 @@ stuff that we should look at to do things
  * where do people point their download url to?
  * where do people point their homepage url to?
 * **overall health**
- * how many packages listed have no info at all             
+ * how many packages listed have no info at all (i.e. dead json link)
  * how many packages have no releases/urls
  * how many packages have no description/bad(?) classifiers/no homepage/no author info/etc
  * makeup of index by version

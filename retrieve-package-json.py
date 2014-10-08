@@ -2,9 +2,9 @@
 from xml.etree import ElementTree
 from urllib.request import urlopen
 from urllib.error import HTTPError
-import json, os.remove
+import json
 from os.path import isfile, join
-from os import listdir
+from os import listdir, remove
 from queue import Queue
 from threading import Thread
 
@@ -20,7 +20,7 @@ def get_pkg_json(dist):
     # the json, and let SQLalchemy check if the record exists/has changed?
     try:
         with urlopen('https://pypi.python.org/pypi/' + dist + '/json/') as f:
-            if not isfile('/PyPiAP/json/'+dist):
+            if not isfile('/PyPiAP/json/'+dist+'.json'):
                 o = open('/PyPiAP/json/'+dist+'.json', 'w')
                 o.write(f.readall().decode('utf-8'))
                 o.close()
@@ -28,7 +28,7 @@ def get_pkg_json(dist):
                 # run insert SQL stuff
                 return True
             else:
-                a = open('/PyPiAP/json/'+dist, 'r').readall().decode('utf-8')
+                a = open('/PyPiAP/json/'+dist+'.json', 'r').read() #.decode('utf-8')
                 b = f.readall().decode('utf-8')
                 if not a == b:
                     o = open('/PyPiAP/json/'+dist+'.json', 'w')
@@ -51,9 +51,12 @@ def clean_json_folder(pkg_list):
     """Remove any package.json file that no longer exists and return the number removed."""
     folder_list = [ f for f in listdir('/PyPiAP/json/') if isfile(join('/PyPiAP/json/',f)) ]
     removed = 0
+    print(folder_list)
+    exit(0)
     for f in folder_list:
-        if not f in pkg_list:
-            os.remove(join('/PyPiAP/json/',f))
+        if not f[:-5] in pkg_list:
+            remove(join('/PyPiAP/json/',f))
+            print('[removed] '+f[:-5])
             removed += 1
     return removed
 
