@@ -12,14 +12,21 @@ def get_distributions(simple_index='https://pypi.python.org/simple/'):
     return [a.text for a in tree.iter('a')]
 
 def get_pkg_json(dist):
+    """Retrieves the JSON file for package name dist and writes it to file, it returns true if the 
+    file is created or false if the json file couldn't be found on PyPi."""
+    # should implement some check to only write if it has changed... or just return
+    # the json, and let SQLalchemy check if the record exists/has changed?
     try:
         with urlopen('https://pypi.python.org/pypi/' + dist + '/json/') as f:
-            o = open("/PyPiAP/json/"+dist+".json", "w")
+            o = open('/PyPiAP/json/'+dist+'.json', 'w')
             o.write(f.readall().decode('utf-8'))
             o.close()
+            # primitive logging :>
             print('retrieved '+dist)
+            return True
     except HTTPError:
-        print("[!] can't find "+dist)
+        print('[!] can't find '+dist)
+        return False
 
 def json_getter():
     while True:
