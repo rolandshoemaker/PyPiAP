@@ -47,3 +47,9 @@ class Author(Base):
 	package_id = Column(Integer, ForeignKey(Package.id))
 	package = relationship(Package)
 
+class Requirement(Base)
+        __tablename__ = 'requirement'
+        id = Column(Integer, primary_key=True)
+        requirement = Column(String)
+        release_id = Column(Integer, ForeignKey(Release.id))
+        package = relationship(Release, backref=backref('requirements'))
