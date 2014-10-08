@@ -1,5 +1,10 @@
+Python Package index Analysis Project
+=====================================
+
+collection of various tools written to help analyze the Python Package index ([PyPi](https://pypi.python.org/pypi)). at some point i'll add a link here to the project page on my website that will show all the pretty graphics and stuff yay ^_^
+
 Analysis
-=======
+--------
 
 stuff that we should look at to do things
 
