@@ -3,6 +3,7 @@ from xml.etree import ElementTree
 from urllib.request import urlopen
 from urllib.error import HTTPError
 import json
+import os.path
 from queue import Queue
 from threading import Thread
 
@@ -18,14 +19,25 @@ def get_pkg_json(dist):
     # the json, and let SQLalchemy check if the record exists/has changed?
     try:
         with urlopen('https://pypi.python.org/pypi/' + dist + '/json/') as f:
-            o = open('/PyPiAP/json/'+dist+'.json', 'w')
-            o.write(f.readall().decode('utf-8'))
-            o.close()
-            # primitive logging :>
-            print('retrieved '+dist)
-            return True
+            if not os.path.isfile('/PyPiAP/json/'+dist):
+                o = open('/PyPiAP/json/'+dist+'.json', 'w')
+                o.write(f.readall().decode('utf-8'))
+                o.close()
+                print('[new] '+dist) # it's a new entry
+                # run insert SQL stuff
+                return True
+            else:
+                a = open('/PyPiAP/json/'+dist, 'r').readall().decode('utf-8')
+                b = f.readall().decode('utf-8')
+                if not a == b:
+                    o = open('/PyPiAP/json/'+dist+'.json', 'w')
+                    o.write(b)
+                    o.close()
+                    print('[update] '+dist) # it's an update to a already existing entry
+                    # run update SQL stuff
+                    return True
     except HTTPError:
-        print('[!] can't find '+dist)
+        print('[!] '+dist)
         return False
 
 def json_getter():
@@ -33,8 +45,6 @@ def json_getter():
         item = all_pkgs.get()
         get_pkg_json(item)
         all_pkgs.task_done()
-
-
 
 worker_num = 3
 all_pkgs = Queue()
@@ -44,7 +54,7 @@ for i in range(worker_num):
     t.daemon = True
     t.start()    
 
-for p in get_distributions()[21871:]:
+for p in get_distributions():
     all_pkgs.put(p)
 
 all_pkgs.join()
