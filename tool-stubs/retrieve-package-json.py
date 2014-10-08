@@ -46,13 +46,13 @@ def json_getter():
         item = pkg_queue.get()
         get_pkg_json(item)
         pkg_queue.task_done()
+        if pkg_queue.qsize == 0:
+            break
 
 def clean_json_folder(pkg_list):
     """Remove any package.json file that no longer exists and return the number removed."""
     folder_list = [ f for f in listdir('/PyPiAP/json/') if isfile(join('/PyPiAP/json/',f)) ]
     removed = 0
-    print(folder_list)
-    exit(0)
     for f in folder_list:
         if not f[:-5] in pkg_list:
             remove(join('/PyPiAP/json/',f))
@@ -60,18 +60,19 @@ def clean_json_folder(pkg_list):
             removed += 1
     return removed
 
-worker_num = 3
+worker_num = 5
 pkg_queue = Queue()
-
-for i in range(worker_num):
-    t = Thread(target=json_getter)
-    t.daemon = True
-    t.start()    
 
 pkgs = get_distributions()
 clean_json_folder(pkgs)
 
 for p in pkgs:
     pkg_queue.put(p)
+
+for i in range(worker_num):
+    t = Thread(target=json_getter)
+    t.daemon = True
+    t.start()    
+
 
 pkg_queue.join()
