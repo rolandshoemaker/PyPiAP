@@ -2,8 +2,8 @@
 from xml.etree import ElementTree
 from urllib.request import urlopen
 from urllib.error import HTTPError
-import json
-import os.path, os.remove
+import json, os.remove
+from os.path import isfile, join
 from os import listdir
 from queue import Queue
 from threading import Thread
@@ -20,7 +20,7 @@ def get_pkg_json(dist):
     # the json, and let SQLalchemy check if the record exists/has changed?
     try:
         with urlopen('https://pypi.python.org/pypi/' + dist + '/json/') as f:
-            if not os.path.isfile('/PyPiAP/json/'+dist):
+            if not isfile('/PyPiAP/json/'+dist):
                 o = open('/PyPiAP/json/'+dist+'.json', 'w')
                 o.write(f.readall().decode('utf-8'))
                 o.close()
@@ -47,12 +47,15 @@ def json_getter():
         get_pkg_json(item)
         pkg_queue.task_done()
 
-def clean_folder(pkg_list):
-    """Remove any package.json file that no longer exists."""
+def clean_json_folder(pkg_list):
+    """Remove any package.json file that no longer exists and return the number removed."""
     folder_list = [ f for f in listdir('/PyPiAP/json/') if isfile(join('/PyPiAP/json/',f)) ]
+    removed = 0
     for f in folder_list:
         if not f in pkg_list:
             os.remove(join('/PyPiAP/json/',f))
+            removed += 1
+    return removed
 
 worker_num = 3
 pkg_queue = Queue()
@@ -63,7 +66,7 @@ for i in range(worker_num):
     t.start()    
 
 pkgs = get_distributions()
-clean_folder(pkgs)
+clean_json_folder(pkgs)
 
 for p in pkgs:
     pkg_queue.put(p)
