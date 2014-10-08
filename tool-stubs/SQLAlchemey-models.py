@@ -7,7 +7,7 @@ Base = declarative_base()
 class Package(Base):
 	__tablename__ = 'package'
 	id = Column(Integer, primary_key=True)
-	name = Column(String)
+	name = Column(String, unique=True)
 	download_url = Column(String)
 	home_page = Column(String)
 	description = Column(String)
