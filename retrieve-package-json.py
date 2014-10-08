@@ -13,13 +13,13 @@ def get_distributions(simple_index='https://pypi.python.org/simple/'):
 
 def get_pkg_json(dist):
     try:
-        print('getting '+'https://pypi.python.org/pypi/' + dist + '/json/')
         with urlopen('https://pypi.python.org/pypi/' + dist + '/json/') as f:
             o = open("/PyPiAP/json/"+dist+".json", "w")
             o.write(f.readall().decode('utf-8'))
             o.close()
+            print('retrieved '+dist)
     except HTTPError:
-        print("can't find "+dist)
+        print("[!] can't find "+dist)
 
 def json_getter():
     while True:
