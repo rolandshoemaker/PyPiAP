@@ -3,7 +3,8 @@ from xml.etree import ElementTree
 from urllib.request import urlopen
 from urllib.error import HTTPError
 import json
-import os.path
+import os.path, os.remove
+from os import listdir
 from queue import Queue
 from threading import Thread
 
@@ -42,19 +43,29 @@ def get_pkg_json(dist):
 
 def json_getter():
     while True:
-        item = all_pkgs.get()
+        item = pkg_queue.get()
         get_pkg_json(item)
-        all_pkgs.task_done()
+        pkg_queue.task_done()
+
+def clean_folder(pkg_list):
+    """Remove any package.json file that no longer exists."""
+    folder_list = [ f for f in listdir('/PyPiAP/json/') if isfile(join('/PyPiAP/json/',f)) ]
+    for f in folder_list:
+        if not f in pkg_list:
+            os.remove(join('/PyPiAP/json/',f))
 
 worker_num = 3
-all_pkgs = Queue()
+pkg_queue = Queue()
 
 for i in range(worker_num):
     t = Thread(target=json_getter)
     t.daemon = True
     t.start()    
 
-for p in get_distributions():
-    all_pkgs.put(p)
+pkgs = get_distributions()
+clean_folder(pkgs)
 
-all_pkgs.join()
+for p in pkgs:
+    pkg_queue.put(p)
+
+pkg_queue.join()
