@@ -14,13 +14,16 @@ class Package(Base):
 	license = Column(String)
 	summary = Column(String)
 	platform = Column(String)
+	downloads_month = Column(Integer)
+	downloads_week = Column(Integer)
+	downloads_day = Column(Integer)
 	
 class Release(Base):
 	__tablename__ = 'release'
 	id = Column(Integer, primary_key=True)
 	version = Column(String)
 	current = Column(Boolean) # Is this the current version of this package?
-	is_url = Column(Boolean) # Does this release also exist in the package['urls'] section?
+	is_url = Column(Boolean) # Does this release also exist in package['urls']?
 	upload_time = Column(DateTime)
 	python_version = Column(String)
 	comment_text = Column(String)
@@ -30,14 +33,14 @@ class Release(Base):
 	size = Column(Integer)
 	downloads = Column(Integer)
 	package_id = Column(Integer, ForeignKey(Package.id))
-	package = relationship(Package, backref=backref('releases'), cascade='all')
+	package = relationship(Package, backref=backref('releases', cascade='all, delete-orphan'))
 
 class Classifier(Base):
 	__tablename__ = 'classifier'
 	id = Column(Integer, primary_key=True)
 	classifier = Column(String)
 	package_id = Column(Integer, ForeignKey(Package.id))
-	package = relationship(Package, backref=backref('classifiers'), cascade='all')
+	package = relationship(Package, backref=backref('classifiers', cascade='all, delete-orphan'))
 
 class Author(Base):
 	__tablename__ = 'author'
@@ -45,11 +48,13 @@ class Author(Base):
 	name = Column(String)
 	email = Column(String)
 	package_id = Column(Integer, ForeignKey(Package.id))
-	package = relationship(Package, cascade='all')
+	package = relationship(Package, backref=backref('author', cascade='all, delete-orphan'))
 
 class Requirement(Base):
         __tablename__ = 'requirement'
         id = Column(Integer, primary_key=True)
-        requirement = Column(String)
+        version = Column(String)
+        requirement_id = Column(Integer ForeignKey(Package.id))
+        package = relationship(Package)
         release_id = Column(Integer, ForeignKey(Release.id))
-        package = relationship(Release, backref=backref('requirements'), cascade='all')
+        release = relationship(Release, backref=backref('requirements', cascade='all, delete-orphan'))
