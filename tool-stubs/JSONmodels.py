@@ -30,14 +30,14 @@ class Release(Base):
 	size = Column(Integer)
 	downloads = Column(Integer)
 	package_id = Column(Integer, ForeignKey(Package.id))
-	package = relationship(Package, backref=backref('releases'))
+	package = relationship(Package, backref=backref('releases'), cascade='all')
 
 class Classifier(Base):
 	__tablename__ = 'classifier'
 	id = Column(Integer, primary_key=True)
 	classifier = Column(String)
 	package_id = Column(Integer, ForeignKey(Package.id))
-	package = relationship(Package, backref=backref('classifiers'))
+	package = relationship(Package, backref=backref('classifiers'), cascade='all')
 
 class Author(Base):
 	__tablename__ = 'author'
@@ -45,11 +45,11 @@ class Author(Base):
 	name = Column(String)
 	email = Column(String)
 	package_id = Column(Integer, ForeignKey(Package.id))
-	package = relationship(Package)
+	package = relationship(Package, cascade='all')
 
 class Requirement(Base):
         __tablename__ = 'requirement'
         id = Column(Integer, primary_key=True)
         requirement = Column(String)
         release_id = Column(Integer, ForeignKey(Release.id))
-        package = relationship(Release, backref=backref('requirements'))
+        package = relationship(Release, backref=backref('requirements'), cascade='all')

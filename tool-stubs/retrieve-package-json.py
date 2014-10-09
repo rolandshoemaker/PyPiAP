@@ -48,8 +48,9 @@ def insert_new(info):
 def update_old(info):
     pass
 
-def remove_dead(filename):
-    pass
+def remove_dead(pkg_name):
+    s.query(Package).filder(Package.name==pkg_name).delete()
+    s.commit()
 
 def get_distributions(simple_index='https://pypi.python.org/simple/'):
     with urlopen(simple_index) as f:
@@ -65,10 +66,12 @@ def get_pkg_json(dist):
         with urlopen('https://pypi.python.org/pypi/' + dist + '/json/') as f:
             if not isfile('/PyPiAP/json/'+dist+'.json'):
                 o = open('/PyPiAP/json/'+dist+'.json', 'w')
-                o.write(f.readall().decode('utf-8'))
+                contents = f.readall().decode('utf-8')
+                o.write(contents)
                 o.close()
                 print('[new] '+dist) # it's a new entry
                 # run insert SQL stuff
+                # insert_new(json.loads(contents))
                 return True
             else:
                 a = open('/PyPiAP/json/'+dist+'.json', 'r').read() #.decode('utf-8')
@@ -79,6 +82,7 @@ def get_pkg_json(dist):
                     o.close()
                     print('[update] '+dist) # it's an update to a already existing entry
                     # run update SQL stuff
+                    # update_old(json.loads(b))
                     return True
     except HTTPError:
         print('[!] '+dist)
@@ -100,22 +104,25 @@ def clean_json_folder(pkg_list):
         if not f[:-5] in pkg_list:
             remove(join('/PyPiAP/json/',f))
             print('[removed] '+f[:-5])
+            # remove from sql
+            # remove_dead(f[:-5])
             removed += 1
     return removed
 
-worker_num = 5
-pkg_queue = Queue()
-
-pkgs = get_distributions()
-clean_json_folder(pkgs)
-
-for p in pkgs:
-    pkg_queue.put(p)
-
-for i in range(worker_num):
-    t = Thread(target=json_getter)
-    t.daemon = True
-    t.start()    
 
 
-pkg_queue.join()
+#worker_num = 5
+#pkg_queue = Queue()
+
+#pkgs = get_distributions()
+#clean_json_folder(pkgs)
+
+#for p in pkgs:
+#    pkg_queue.put(p)
+
+#for i in range(worker_num):
+#    t = Thread(target=json_getter)
+#    t.daemon = True
+#    t.start()    
+
+#pkg_queue.join()
