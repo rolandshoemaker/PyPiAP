@@ -8,6 +8,49 @@ from os import listdir, remove
 from queue import Queue
 from threading import Thread
 
+import JSONmodels
+
+def insert_new(info):
+    package = JSONmodels.Package(name=info['info']['name'],
+        download_url=info['info']['download_url'],
+        home_page=info['info']['home_page'],
+        description=info['info']['description'],
+        license=info['info']['license'],
+        summary=info['info']['summary'],
+        platform=info['info']['platform'])
+    s.add(package)
+    author = JSONmodels.Author(name=info['info']['author'],
+        email=info['info']['author_email'],
+        package=package)
+    a.add(author)
+    for c in info['info']['classifiers']:
+        classifier = JSONmodels.Classifier(classifier=c, package=package)
+        s.add(classifier)
+    for version, pkgs in info['releases'].iteritems():
+	for i, p in enumerate(pkgs):
+            is_url = p in info['urls']
+            current = version == info['info']['version']
+            release = JSONmodels.Release(version=version,
+                current=current,
+                is_url=is_url,
+                upload_time=strptime(info['release'][i]['upload_time'], '%Y-%m-%dT%H:%M:%S'),
+                python_version=info['release'][i]['python_version'],
+                comment_text=info['release'][i]['comment_text'],
+                has_sig=info['release'][i]['has_sig'],
+                filename=info['release'][i]['filename'],
+                packagetype=info['release'][i]['packagetype'],
+                size=info['release'][i]['size'],
+                downloads=info['release'][i]['downloads'],
+                package=package)
+            s.add(release)
+            # do requirement extracting here or elsewhere?
+
+def update_old(info):
+    pass
+
+def remove_dead(filename):
+    pass
+
 def get_distributions(simple_index='https://pypi.python.org/simple/'):
     with urlopen(simple_index) as f:
         tree = ElementTree.parse(f)
