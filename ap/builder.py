@@ -95,7 +95,7 @@ def resync():
 
     # Open db session
     session = sessionmaker()
-    session.configure(autoflush=True, autocommit=False, bind=engine)
+    session.configure(autoflush=True, autocommit=False, bind=db.engine)
     s = session()
 
     # Get list of all json files.
