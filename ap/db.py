@@ -5,7 +5,8 @@ from sqlalchemy import create_engine
 import datetime
 from time import strptime
 
-import config, utils
+from ap import config
+from ap.utils import peeper
 
 Base = declarative_base()
 
@@ -65,8 +66,9 @@ class Requirement(Base):
         release_id = Column(Integer, ForeignKey(Release.id))
         release = relationship(Release, backref=backref('requirements', cascade='all, delete-orphan'))
 
-engine = create_engine(config.db)
-Base.metadata.create_all(engine)
+json_engine = create_engine(config.db+'pypi-json')
+stats_engine = create_engine(config.db+'pypi-stats')
+Base.metadata.create_all(json_engine)
 
 def insert_new(info, s):
     package = Package(name=info['info']['name'],
@@ -112,7 +114,7 @@ def new_requirements(info, s):
         for i, p in enumerate(pkgs):
             if info['releases'][version][i]['packagetype'] == 'sdist': # and info['releases'][version][i] in info['urls']:
                 compressed_path = '/pypi_mirror/web/' + '/'.join(info['releases'][version][i]['url'].split('/')[3:])
-                for r in utils.extract_requirements(compressed_path, info['info']['name']):
+                for r in peeper.extract_requirements(compressed_path, info['info']['name']):
                     try:
                         req_info = req_parser.parse(r)
                         if req_info.project_name == "":

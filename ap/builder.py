@@ -8,7 +8,7 @@ from os.path import isfile, join
 from os import listdir, remove
 from sqlalchemy.orm import sessionmaker
 
-import db
+from ap import db
 
 def get_distributions(simple_index='https://pypi.python.org/simple/'):
     with urlopen(simple_index) as f:
@@ -95,7 +95,7 @@ def resync():
 
     # Open db session
     session = sessionmaker()
-    session.configure(autoflush=True, autocommit=False, bind=db.engine)
+    session.configure(autoflush=True, autocommit=False, bind=db.json_engine)
     s = session()
 
     # Get list of all json files.

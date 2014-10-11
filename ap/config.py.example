@@ -1,1 +1,1 @@
-db = 'postgres://postgres:password@localhost/pypi-json'
+db = 'postgres://postgres:password@localhost/'
