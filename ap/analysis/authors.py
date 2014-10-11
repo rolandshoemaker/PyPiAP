@@ -2,7 +2,7 @@ from ap import db
 from sqlalchemy import func
 
 def top_authors(s, limit=0):
-	""""""
+	"""Returns a list of authors sorted by how many packages they have contributed to the index (by default limit is none.)"""
 	authors = s.query(db.Author.name, func.count(db.Author.name)).group_by(db.Author.name).having(func.count(db.Author.name) > 1).all()
 	authors.sort(key=lambda tup: tup[1], reverse=True)
 	if limit > 0:
