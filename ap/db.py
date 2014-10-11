@@ -71,6 +71,7 @@ stats_engine = create_engine(config.db+'pypi-stats')
 Base.metadata.create_all(json_engine)
 
 def insert_new(info, s):
+    """Add a new set of records based on json."""
     package = Package(name=info['info']['name'],
         download_url=info['info']['download_url'],
         home_page=info['info']['home_page'],
@@ -110,6 +111,7 @@ def insert_new(info, s):
     print('[sql:insert] inserted records for '+package.name)
 
 def new_requirements(info, s):
+    """Insert new set of requirement records for a package, should be done after full package index is built."""
     for version, pkgs in info['releases'].items():
         for i, p in enumerate(pkgs):
             if info['releases'][version][i]['packagetype'] == 'sdist': # and info['releases'][version][i] in info['urls']:
@@ -144,6 +146,7 @@ def update_old(info, s):
     pass
 
 def remove_dead(pkg_name, s):
+    """Remove records for a package that's disappeared."""
     package = s.query(Package).filter(Package.name==pkg_name).first()
     s.delete(package)
     print('[sql:delete] removed records for '+pkg_name)

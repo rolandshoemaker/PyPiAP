@@ -54,3 +54,12 @@ def avg_release_interval(s):
 					time_dlts += (t-times[i+1])
 			avgs += time_dlts/(len(times)-1)
 	return avgs/len(pkgs)
+
+def avg_release_age(s):
+	"""Return average age of current releases as a datetime.timedelta object."""
+	# should remove outliers and all that silly stuff
+	releases = s.query(db.Release).filter(db.Release.current==True).all()
+	diff = datetime.timedelta()
+	for r in releases:
+		diff += datetime.datetime.now() - r.upload_time
+	return diff/len(releases)

@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from ap import db
 
 def get_distributions(simple_index='https://pypi.python.org/simple/'):
+    """Gets a simple list of packages PyPi tracks."""
     with urlopen(simple_index) as f:
         tree = ElementTree.parse(f)
     return [a.text for a in tree.iter('a')]
@@ -49,6 +50,7 @@ def get_pkg_json(dist):
         return False
 
 def json_getter():
+    """Wrapper for threaded JSON getting."""
     while True:
         item = pkg_queue.get()
         get_pkg_json(item)
@@ -70,6 +72,7 @@ def clean_json_folder(pkg_list):
     return removed
 
 def resync():
+    """Update the package package index and incorporate those changes into pypi-json."""
     worker_num = 5
     pkg_queue = Queue()
     ins_queue = Queue()
