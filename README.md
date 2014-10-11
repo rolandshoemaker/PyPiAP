@@ -15,6 +15,7 @@ Module structure
       --> analysis # various collections of tests to run against data in pypi-json
         -- authors.py
         -- releases.py
+        -- general.py
 
 Analysis
 --------
