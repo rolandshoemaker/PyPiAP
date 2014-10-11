@@ -1,3 +1,4 @@
 json/
 tool-stubs/
 ap/config.py
+*.pyc

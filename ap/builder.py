@@ -7,6 +7,7 @@ from urllib.error import HTTPError
 from os.path import isfile, join
 from os import listdir, remove
 from sqlalchemy.orm import sessionmaker
+import datetime
 
 from ap import db
 
@@ -78,6 +79,7 @@ def resync():
     ins_queue = Queue()
     upd_queue = Queue()
     del_queue = Queue()
+    start_time = datetime.datetime.now()
 
     # Get simple package index
     pkgs = get_distributions()
@@ -111,7 +113,9 @@ def resync():
     json_list = []
     old_json_list = []
 
+    # This whole section could probably be multi-threaded
     # Insert new records
+    ins_num = ins_queue.qsize
     if ins_queue.qsize > 0:
         while True:
             f = ins_queue.get()
@@ -125,6 +129,7 @@ def resync():
                 break
 
     # Update old records
+    upd_num = upd_queue.qsize
     if upd_queue.qsize > 0:
         while True:
             f = upd_queue.get()
@@ -146,6 +151,7 @@ def resync():
             if del_queue.qsize == 0:
                 break
 
+    # This part should prob be multi-thread too... (but after the first one?)
     # Add requirement records for new packages
     for j in json_list:
         db.new_requirements(j, s)
@@ -153,3 +159,14 @@ def resync():
     # Update requirement records for old packages
     for j in old_json_list:
         db.update_requirements(j, s)
+
+    end_time = datetime.datetime.now()
+
+    # Return stats about what we did done
+    return {'index_count': index_len,
+        'real_count': real_len,
+        'phantom_count': phantom_size,
+        'pkgs_inserted': ins_num,
+        'pkgs_updated': upd_num,
+        'pkgs_removed': pkgs_removed,
+        'runtime': end_time - start_time}
