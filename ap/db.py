@@ -69,7 +69,7 @@ engine = create_engine(config.db)
 Base.metadata.create_all(engine)
 
 def insert_new(info, s):
-    package = JSONmodels.Package(name=info['info']['name'],
+    package = Package(name=info['info']['name'],
         download_url=info['info']['download_url'],
         home_page=info['info']['home_page'],
         description=info['info']['description'],
@@ -80,18 +80,18 @@ def insert_new(info, s):
         downloads_week=info['info']['downloads']['last_week'],
         downloads_day=info['info']['downloads']['last_day'])
     s.add(package)
-    author = JSONmodels.Author(name=info['info']['author'],
+    author = Author(name=info['info']['author'],
         email=info['info']['author_email'],
         package=package)
     s.add(author)
     for c in info['info']['classifiers']:
-        classifier = JSONmodels.Classifier(classifier=c, package=package)
+        classifier = Classifier(classifier=c, package=package)
         s.add(classifier)
     for version, pkgs in info['releases'].items():
         for i, p in enumerate(pkgs):
             is_url = p in info['urls']
             current = version == info['info']['version']
-            release = JSONmodels.Release(version=version,
+            release = Release(version=version,
                 current=current,
                 is_url=is_url,
                 upload_time=datetime.datetime(*strptime(info['releases'][version][i]['upload_time'], '%Y-%m-%dT%H:%M:%S')[:6]),
@@ -124,10 +124,10 @@ def new_requirements(info, s):
                         else:
                             req_op = ''
                             req_version = ''
-                        req = JSONmodels.Requirement(version=req_version,
+                        req = Requirement(version=req_version,
                             op=req_op,
-                            package=s.query(JSONmodels.Package).filter(JSONmodels.Package.name==req_pkg_name).first(),
-                            release=s.query(JSONmodels.Release).filter(JSONmodels.Release.filename==info['releases'][version][i]['url'].split('/')[-1]).first())
+                            package=s.query(Package).filter(Package.name==req_pkg_name).first(),
+                            release=s.query(Release).filter(Release.filename==info['releases'][version][i]['url'].split('/')[-1]).first())
                         s.add(req)
                         s.commit()
                     except ValueError:
@@ -142,7 +142,7 @@ def update_old(info, s):
     pass
 
 def remove_dead(pkg_name, s):
-    package = s.query(Package).filter(JSONmodels.Package.name==pkg_name).first()
+    package = s.query(Package).filter(Package.name==pkg_name).first()
     s.delete(package)
     print('[sql:delete] removed records for '+pkg_name)
     s.commit()
