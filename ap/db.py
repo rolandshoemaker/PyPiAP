@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 import datetime
 from time import strptime
 
-import config
+import config, utils
 
 Base = declarative_base()
 
@@ -112,7 +112,7 @@ def new_requirements(info, s):
         for i, p in enumerate(pkgs):
             if info['releases'][version][i]['packagetype'] == 'sdist': # and info['releases'][version][i] in info['urls']:
                 compressed_path = '/pypi_mirror/web/' + '/'.join(info['releases'][version][i]['url'].split('/')[3:])
-                for r in extract_requirements(compressed_path, info['info']['name']):
+                for r in utils.extract_requirements(compressed_path, info['info']['name']):
                     try:
                         req_info = req_parser.parse(r)
                         if req_info.project_name == "":
