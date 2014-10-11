@@ -38,6 +38,8 @@ def minmax_size(s):
 	return (s.query(func.min(db.Release.size)).scalar(), s.query(func.max(db.Release.size)).scalar())
 
 def avg_release_interval(s):
+	"""Return the average interval between releases."""
+	# Note this takes forever to run, probably could find a better way?
 	avgs = datetime.timedelta()
 	pkgs = s.query(db.Package).filter(db.Package.releases.any()).all()
 	for p in pkgs:
