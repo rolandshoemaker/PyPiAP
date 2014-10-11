@@ -8,6 +8,7 @@ def top_authors(s, limit=0):
 	if limit > 0:
 		return authors[:limit]
 	else:
+		# this is a lot!
 		return authors
 
 def unique_authors(s):
