@@ -1,6 +1,6 @@
 from ap import db
 from sqlalchemy import func
-import datetime
+import datetime, numpy
 
 def num(s):
 	"""Return total number of releases."""
@@ -40,26 +40,18 @@ def minmax_size(s):
 def avg_release_interval(s):
 	"""Return the average interval between releases."""
 	# Note this takes forever to run, probably could find a better way?
-	avgs = datetime.timedelta()
+	# oct 11 - this should be somewhat faster?
 	pkgs = s.query(db.Package).filter(db.Package.releases.any()).all()
+	time_dlts = []
 	for p in pkgs:
 		if len(p.releases) > 1:
-			times = []
-			time_dlts = datetime.timedelta()
-			for r in p.releases:
-				times.append(r.upload_time)
-			times.sort(reverse=True)
-			for i, t in enumerate(times):
-				if len(times) > i+1:
-					time_dlts += (t-times[i+1])
-			avgs += time_dlts/(len(times)-1)
-	return avgs/len(pkgs)
+			p.releases.sort(key=lambda tup: tup.upload_time, reverse=True)
+			times = [p.releases[i].upload_time-p.releases[i+1].upload_time for i in range(len(p.releases)-2)]
+			time_dlts.append(numpy.mean(times))
+	return numpy.mean(time_dlts)
 
 def avg_release_age(s):
 	"""Return average age of current releases as a datetime.timedelta object."""
 	# should remove outliers and all that silly stuff
-	releases = s.query(db.Release).filter(db.Release.current==True).all()
-	diff = datetime.timedelta()
-	for r in releases:
-		diff += datetime.datetime.now() - r.upload_time
-	return diff/len(releases)
+	releases = [datetime.datetime.now() - r[0] for r in s.query(db.Release.upload_time).filter(db.Release.current==True).all()]
+	return numpy.mean(releases)
