@@ -12,7 +12,9 @@ Module structure
       -- config.py # config variables
       --> utils # utility functions that may be reused
         -- peeper.py # tool to extract requirements from tarballs/zips
-      --> tests # various tests to run against data in pypi-json
+      --> analysis # various collections of tests to run against data in pypi-json
+        -- authors.py
+        -- releases.py
 
 Analysis
 --------
