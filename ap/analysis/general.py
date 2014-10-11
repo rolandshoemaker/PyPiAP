@@ -15,8 +15,10 @@ def no_urls(s):
 	pass
 
 def downloads(s):
-	downloads = s.query(func.sum(db.Release.downloads), func.sum(db.Package.downloads_day), func.sum(db.Package.downloads_week), func.sum(db.Package.downloads_month)).first()
+	"""Return dict containing download statistics for the index."""
+	downloads = s.query(func.sum(db.Release.downloads), func.sum(db.Release.downloads).filter(db.Release.current==True), func.sum(db.Package.downloads_day), func.sum(db.Package.downloads_week), func.sum(db.Package.downloads_month)).first()
 	return {'all_time_total': downloads[0],
-	    'last_day': downloads[1],
-	    'last_week': downloads[2],
-	    'last_month': downloads[3]}
+		'current_total': downloads[1],
+	    'last_day': downloads[2],
+	    'last_week': downloads[3],
+	    'last_month': downloads[4]}
