@@ -5,9 +5,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-def get_edgelist(s):
+def get_edgelist(s, names=False):
 	"""Return edgelist for current Package requirement graph."""
-	return s.query(db.Package.id, db.Requirement.requirement_id).join(db.Release).filter(db.Release.id==db.Requirement.release_id).filter(db.Release.current==True).filter(db.Requirement.requirement.id.__ne__(None)).all()
+	return s.query(db.Package.id, db.Requirement.requirement_id).join(db.Release).filter(db.Release.id==db.Requirement.release_id).filter(db.Release.current==True).filter(db.Requirement.requirement_id.__ne__(None)).all()
 
 def degree_rank_chart(edgelist, filename):
 	"""Create a degree rank chart."""
