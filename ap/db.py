@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, update
 import datetime
 from time import strptime
 
@@ -70,6 +70,11 @@ json_engine = create_engine(config.db+'pypi-json')
 stats_engine = create_engine(config.db+'pypi-stats')
 Base.metadata.create_all(json_engine)
 
+def make_session(engine):
+	session = sessionmaker()
+	session.configure(autoflush=True, autocommit=False, bind=engine)
+	return session()
+
 def insert_new(info, s):
     """Add a new set of records based on json."""
     package = Package(name=info['info']['name'],
@@ -107,7 +112,6 @@ def insert_new(info, s):
                 downloads=info['releases'][version][i]['downloads'],
                 package=package)
             s.add(release)
-    s.commit()
     print('[sql:insert] inserted records for '+package.name)
 
 def new_requirements(info, s):
@@ -133,21 +137,70 @@ def new_requirements(info, s):
                             package=s.query(Package).filter(Package.name==req_pkg_name).first(),
                             release=s.query(Release).filter(Release.filename==info['releases'][version][i]['url'].split('/')[-1]).first())
                         s.add(req)
-                        s.commit()
                     except ValueError:
                         pass
     print('[sql:insert] inserted requirements for '+info['info']['name'])
 
 def update_requirements(info, s):
-	pass
+	# since we are just nuking requirements lets just pass this through now
+	new_requirements(info, s)
 
 def update_old(info, s):
+	package = s.query(Package).where(Package.name==info['info']['name']).first()
+	package.name = info['info']['name']
+    package.download_url = info['info']['download_url']
+    package.home_page = info['info']['home_page']
+    package.description = info['info']['description']
+    package.license = info['info']['license']
+    package.summary = info['info']['summary']
+    package.platform = info['info']['platform']
+    package.downloads_month = info['info']['downloads']['last_month']
+    package.downloads_week = info['info']['downloads']['last_week']
+    package.downloads_day = info['info']['downloads']['last_day']
+
+    author = s.query(Author).where(Package.id==package.id)
+    author.name = info['info']['author']
+    author.email=info['info']['author_email']
+    author.package=package
+    
+    old_classifiers = s.query(Classifier).where(Package.id==package.id).all()
+    for c in old_classifiers:
+    	if not c.classifier in info['info']['classifiers']:
+    		s.delete(c)
+    	else:
+    		info['info']['classifiers'].pop(info['info']['classifiers'].index(c.classifier))
+
+    for c in info['info']['classifiers']:
+        classifier = Classifier(classifier=c, package=package)
+        s.add(classifier)
+
+    # just nuke and re introduce releases and requirements since idk the best way to do it now
+    for r in s.query(Release).where(Package.id==package.id).all():
+    	s.delete(r) # *should* cascade to requirements?
+
+    for version, pkgs in info['releases'].items():
+        for i, p in enumerate(pkgs):
+        	if s.query(Release).
+            is_url = p in info['urls']
+            current = version == info['info']['version']
+            release = Release(version=version,
+                current=current,
+                is_url=is_url,
+                upload_time=datetime.datetime(*strptime(info['releases'][version][i]['upload_time'], '%Y-%m-%dT%H:%M:%S')[:6]),
+                python_version=info['releases'][version][i]['python_version'],
+                comment_text=info['releases'][version][i]['comment_text'],
+                has_sig=info['releases'][version][i]['has_sig'],
+                filename=info['releases'][version][i]['filename'],
+                packagetype=info['releases'][version][i]['packagetype'],
+                size=info['releases'][version][i]['size'],
+                downloads=info['releases'][version][i]['downloads'],
+                package=package)
+            s.add(release)
+
     print('[sql:update] updated records for '+package.name)
-    pass
 
 def remove_dead(pkg_name, s):
     """Remove records for a package that's disappeared."""
     package = s.query(Package).filter(Package.name==pkg_name).first()
     s.delete(package)
     print('[sql:delete] removed records for '+pkg_name)
-    s.commit()

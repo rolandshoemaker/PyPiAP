@@ -99,9 +99,7 @@ def resync():
     pkg_queue.join()
 
     # Open db session
-    session = sessionmaker()
-    session.configure(autoflush=True, autocommit=False, bind=db.json_engine)
-    s = session()
+    s = make_session(db.json_engine)
 
     # Get list of all json files.
     folder_list = [ f for f in listdir('/PyPiAP/json/') if isfile(join('/PyPiAP/json/',f)) ]
@@ -124,6 +122,7 @@ def resync():
             json_list.append(j)
             o.close()
             db.insert_new(j, s)
+            s.commit()
             ins_queue.task_done()
             if ins_queue.qsize == 0:
                 break
@@ -138,6 +137,7 @@ def resync():
             old_json_list.append(j)
             o.close()
             db.update_old(j, s)
+            s.commit()
             upd_queue.task_done()
             if upd_queue.qsize == 0:
                 break
@@ -147,6 +147,7 @@ def resync():
         while True:
             f = del_queue.get()
             db.remove_dead(f, s)
+            s.commit()
             del_queue.task_done()
             if del_queue.qsize == 0:
                 break
@@ -155,11 +156,14 @@ def resync():
     # Add requirement records for new packages
     for j in json_list:
         db.new_requirements(j, s)
+        s.commit()
 
     # Update requirement records for old packages
     for j in old_json_list:
         db.update_requirements(j, s)
+        s.commit()
 
+    s.close()
     end_time = datetime.datetime.now()
 
     # Return stats about what we did done
