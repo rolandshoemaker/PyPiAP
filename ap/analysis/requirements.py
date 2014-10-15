@@ -19,3 +19,4 @@ def degree_rank_chart(edgelist, filename):
 	plt.xlabel('rank')
 	plt.savefig(filename)
 	plt.close()
+

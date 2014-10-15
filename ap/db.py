@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, update
+from sqlalchemy.orm import sessionmaker
 import datetime
 from time import strptime
 
@@ -11,7 +12,7 @@ from ap.utils import peeper
 # JSON decomp tables
 json_Base = declarative_base()
 
-class Package(Base):
+class Package(json_Base):
 	__tablename__ = 'package'
 	id = Column(Integer, primary_key=True)
 	name = Column(String, unique=True)
@@ -25,7 +26,7 @@ class Package(Base):
 	downloads_week = Column(Integer)
 	downloads_day = Column(Integer)
 	
-class Release(Base):
+class Release(json_Base):
 	__tablename__ = 'release'
 	id = Column(Integer, primary_key=True)
 	version = Column(String)
@@ -42,14 +43,14 @@ class Release(Base):
 	package_id = Column(Integer, ForeignKey(Package.id))
 	package = relationship(Package, backref=backref('releases', cascade='all, delete-orphan'))
 
-class Classifier(Base):
+class Classifier(json_Base):
 	__tablename__ = 'classifier'
 	id = Column(Integer, primary_key=True)
 	classifier = Column(String)
 	package_id = Column(Integer, ForeignKey(Package.id))
 	package = relationship(Package, backref=backref('classifiers', cascade='all, delete-orphan'))
 
-class Author(Base):
+class Author(json_Base):
 	__tablename__ = 'author'
 	id = Column(Integer, primary_key=True)
 	name = Column(String)
@@ -57,7 +58,7 @@ class Author(Base):
 	package_id = Column(Integer, ForeignKey(Package.id))
 	package = relationship(Package, backref=backref('author', cascade='all, delete-orphan'))
 
-class Requirement(Base):
+class Requirement(json_Base):
     __tablename__ = 'requirement'
     id = Column(Integer, primary_key=True)
     version = Column(String)
@@ -76,9 +77,9 @@ stats_engine = create_engine(config.db+'pypi-stats')
 json_Base.metadata.create_all(json_engine)
 stats_Base.metadata.create_all(stats_engine)
 
-def make_session(engine):
+def make_session(engine, autoflush=True, autocommit=False):
 	session = sessionmaker()
-	session.configure(autoflush=True, autocommit=False, bind=engine)
+	session.configure(autoflush=autoflush, autocommit=autocommit, bind=engine)
 	return session()
 
 def insert_new(info, s):
@@ -152,8 +153,8 @@ def update_requirements(info, s):
 	new_requirements(info, s)
 
 def update_old(info, s):
-	package = s.query(Package).where(Package.name==info['info']['name']).first()
-	package.name = info['info']['name']
+    package = s.query(Package).where(Package.name==info['info']['name']).first()
+    package.name = info['info']['name']
     package.download_url = info['info']['download_url']
     package.home_page = info['info']['home_page']
     package.description = info['info']['description']
@@ -186,7 +187,6 @@ def update_old(info, s):
 
     for version, pkgs in info['releases'].items():
         for i, p in enumerate(pkgs):
-        	if s.query(Release).
             is_url = p in info['urls']
             current = version == info['info']['version']
             release = Release(version=version,
