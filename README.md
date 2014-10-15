@@ -16,6 +16,11 @@ Module structure
         -- authors.py
         -- releases.py
         -- classifiers.py
+        
+Pretty pictures
+---------------
+
+![python requirement graph](py-network.png)
 
 Analysis
 --------
