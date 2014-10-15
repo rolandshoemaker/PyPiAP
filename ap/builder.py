@@ -82,15 +82,18 @@ def resync():
     start_time = datetime.datetime.now()
 
     # Get simple package index
+    print("# Fetching Simple index.")
     pkgs = get_distributions()
     index_len = len(pkgs)
     # Remove json files for packages that no longer exist
+    print("# Removing JSON files for dead packages.")
     pkgs_removed = clean_json_folder(pkgs)
 
     for p in pkgs:
        pkg_queue.put(p)
 
     # Start json_getters
+    print("# Retreiving JSON files.")
     for i in range(worker_num):
        t = Thread(target=json_getter)
        t.daemon = True
@@ -115,6 +118,7 @@ def resync():
     # Insert new records
     ins_num = ins_queue.qsize
     if ins_queue.qsize > 0:
+        print("# Inserting records for new packages.")
         while True:
             f = ins_queue.get()
             o = open(join('/PyPiAP/json/',f), 'r')
@@ -130,6 +134,7 @@ def resync():
     # Update old records
     upd_num = upd_queue.qsize
     if upd_queue.qsize > 0:
+        print("# Updating records for old packages.")
         while True:
             f = upd_queue.get()
             o = open(join('/PyPiAP/json/',f), 'r')
@@ -144,6 +149,7 @@ def resync():
 
     # Delete dead records
     if del_queue.qsize > 0:
+        print("# Deleting records for dead packages.")
         while True:
             f = del_queue.get()
             db.remove_dead(f, s)
@@ -154,6 +160,7 @@ def resync():
 
     # This part should prob be multi-thread too... (but after the first one?)
     # Add requirement records for new packages
+    print("# Building requirement network.")
     for j in json_list:
         db.new_requirements(j, s)
         s.commit()
@@ -165,6 +172,7 @@ def resync():
 
     s.close()
     end_time = datetime.datetime.now()
+    print("# Finished, runtime: "+str(end_time - start_time)+".")
 
     # Return stats about what we did done
     return {'index_count': index_len,

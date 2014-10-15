@@ -8,7 +8,8 @@ from time import strptime
 from ap import config
 from ap.utils import peeper
 
-Base = declarative_base()
+# JSON decomp tables
+json_Base = declarative_base()
 
 class Package(Base):
 	__tablename__ = 'package'
@@ -57,18 +58,23 @@ class Author(Base):
 	package = relationship(Package, backref=backref('author', cascade='all, delete-orphan'))
 
 class Requirement(Base):
-        __tablename__ = 'requirement'
-        id = Column(Integer, primary_key=True)
-        version = Column(String)
-        op = Column(String)
-        requirement_id = Column(Integer, ForeignKey(Package.id))
-        package = relationship(Package)
-        release_id = Column(Integer, ForeignKey(Release.id))
-        release = relationship(Release, backref=backref('requirements', cascade='all, delete-orphan'))
+    __tablename__ = 'requirement'
+    id = Column(Integer, primary_key=True)
+    version = Column(String)
+    op = Column(String)
+    requirement_id = Column(Integer, ForeignKey(Package.id))
+    package = relationship(Package)
+    release_id = Column(Integer, ForeignKey(Release.id))
+    release = relationship(Release, backref=backref('requirements', cascade='all, delete-orphan'))
+
+# Statistic collection tables
+stats_Base = declarative_base()
+
 
 json_engine = create_engine(config.db+'pypi-json')
 stats_engine = create_engine(config.db+'pypi-stats')
-Base.metadata.create_all(json_engine)
+json_Base.metadata.create_all(json_engine)
+stats_Base.metadata.create_all(stats_engine)
 
 def make_session(engine):
 	session = sessionmaker()
@@ -203,4 +209,4 @@ def remove_dead(pkg_name, s):
     """Remove records for a package that's disappeared."""
     package = s.query(Package).filter(Package.name==pkg_name).first()
     s.delete(package)
-    print('[sql:delete] removed records for '+pkg_name)
+    print('[sql:drop] removed records for '+pkg_name)
