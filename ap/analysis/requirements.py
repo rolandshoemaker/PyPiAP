@@ -20,3 +20,8 @@ def degree_rank_chart(edgelist, filename):
 	plt.savefig(filename)
 	plt.close()
 
+def edgelist_to_csv(edgelist, filename):
+	with open(filename, 'w') as out:
+		csv_out = csv.writer(out)
+		for row in edgelist:
+			csv_out.writerow(row)
