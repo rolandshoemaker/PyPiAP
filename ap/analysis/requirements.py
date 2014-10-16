@@ -1,6 +1,7 @@
 from ap import db
 from sqlalchemy import func
 import networkx as nx
+import csv
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -20,7 +21,8 @@ def degree_rank_chart(edgelist, filename):
 	plt.savefig(filename)
 	plt.close()
 
-def edgelist_to_csv(edgelist, filename):
+def tuplelist_to_csv(edgelist, filename):
+	"""Write list(/list of tuples) to CSV for import into something like Gephi."""
 	with open(filename, 'w') as out:
 		csv_out = csv.writer(out)
 		for row in edgelist:

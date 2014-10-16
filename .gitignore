@@ -2,3 +2,6 @@ json/
 tool-stubs/
 ap/config.py
 *.pyc
+*.csv
+graphs/
+gexf-js/
