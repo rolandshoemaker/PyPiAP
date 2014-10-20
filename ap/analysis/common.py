@@ -35,3 +35,7 @@ def graph_to_gexf(g, path):
 def graph_to_pickle(g):
 	"""Return a NetworkX graph as a binary Python Pickle."""
 	return pickle.dumps(g, pickle.HIGHEST_PROTOCOL)
+
+def pickle_to_graph(pickle):
+	"""Return NetworkX graph from a Pickle."""
+	return pickle.loads(pickle)
