@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import tarfile, ast, re
 from zipfile import ZipFile
 from os.path import isfile, join
@@ -73,7 +74,7 @@ def extract_requirements(tarball, name):
 
 if __name__ == "__main__":
 	import argparse
-	parser = argparse.ArgumentParser(description='Peep inside a Python tarball/zip and find its dirty requirements.')
+	parser = argparse.ArgumentParser(description='Peep inside a Python sdist tarball/zip and find its dirty requirements.')
 	parser.add_argument('file', help='File to peep into.')
 	parser.add_argument('-n', help='Optional name of package, peeper will guess if not supplied (needs to include version number if in tarball name.)')
 	args = parser.parse_args()
@@ -93,6 +94,6 @@ if __name__ == "__main__":
 			args.n = args.n.split('/')[-1]
 	else:
 		args.n = ''
-	print('['+args.n+' requires:]')
+	print('['+args.n+' requires]')
 	for r in extract_requirements(args.file, args.n):
 		print('\t'+r)

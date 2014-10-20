@@ -22,3 +22,5 @@ def email_tld(tld, s):
 def multiple_authors(s):
 	"""Return number of packages that (seem to) have multiple authors."""
 	return s.query(db.Author.name).filter(func.lower(db.Author.name).contains('inc').__ne__(True)).filter(func.lower(db.Author.name).contains('ltd').__ne__(True)).filter(db.Author.name.contains(',')).count()
+
+	
