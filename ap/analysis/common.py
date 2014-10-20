@@ -13,11 +13,11 @@ def create_graph(nodelist, edgelist, directed=True):
 	g.add_edges_from(edgelist)
 	return g
 
-def get_nodelist(s):
+def get_pkg_nodelist(s):
 	"""Return node list for current Package requirement graph."""
 	return [p[0] for p in s.query(db.Package.id).all()]
 
-def get_edgelist(s):
+def get_pkg_edgelist(s):
 	"""Return edge list for current Package requirement graph."""
 	return s.query(db.Package.id, db.Requirement.requirement_id).join(db.Release).filter(db.Release.id==db.Requirement.release_id).filter(db.Release.current==True).filter(db.Requirement.requirement_id.__ne__(None)).all()
 

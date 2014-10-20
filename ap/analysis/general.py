@@ -1,5 +1,5 @@
 from ap import db
-from ap.analysis.common import get_edgelist
+from ap.analysis.common import get_pkg_edgelist
 from sqlalchemy import func
 import networkx as nx
 import matplotlib
@@ -11,7 +11,7 @@ def pkg_num(s):
 	return s.query(db.Packages).count()
 
 def no_releases(s):
-	"""Return total number of packages that have no releases."""
+	"""Return total number of packages that have no release."""
 	# probably better way of doing this?
 	return s.query(db.Packages).count() - s.query(db.Package).filter(db.Package.releases.any()).count()
 
@@ -30,7 +30,7 @@ def downloads(s):
 
 def downloads_vs_indegree(s, filename):
 	"""Create chart of the number of downloads per package vs. the number of times it is required, and return this data as a dict."""
-	g = nx.DiGraph(get_edgelist(s))
+	g = nx.DiGraph(get_pkg_edgelist(s))
 	plot_data = []
 	for n in g.nodes():
 		plot_data.append([g.in_degree(n), s.query(func.sum(db.Release.downloads)).filter(db.Release.current==True).filter(db.Release.package_id==n).first()[0]])
@@ -48,7 +48,7 @@ def downloads_vs_indegree(s, filename):
 
 def top_required_packages(s, top=5):
 	"""Return list of top required packages and the number of times they are required."""
-	g = nx.DiGraph(get_edgelist(s))
+	g = nx.DiGraph(get_pkg_edgelist(s))
 	indegs = list(g.in_degree().items())
 	indegs.sort(key=lambda tup: tup[1], reverse=True)
 	named_top = []

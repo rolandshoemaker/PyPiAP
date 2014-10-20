@@ -1,5 +1,5 @@
 from ap import db
-from ap.analysis.common import create_graph, get_edgelist, get_nodelist
+from ap.analysis.common import create_graph, get_pkg_edgelist, get_pkg_nodelist
 from sqlalchemy import func
 import networkx as nx
 import csv
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 def strong_weak_package_connections(s, g=None):
 	if not g:
-		g = create_graph(get_nodelist(s), get_edgelist(s))
+		g = create_graph(get_pkg_nodelist(s), get_pkg_edgelist(s))
 	strong = [t for t in list(nx.strongly_connected_components(g)) if len(t) > 1]
 	strong_names = []
 	for c in strong:
@@ -29,7 +29,7 @@ def strong_weak_package_connections(s, g=None):
 def packages_with_selfloops(s, g=None):
 	"""Return a list of Packages which require themselves."""
 	if not g:
-		g = create_graph(get_nodelist(s), get_edgelist(s))
+		g = create_graph(get_pkg_nodelist(s), get_pkg_edgelist(s))
 	id_list = g.nodes_with_selfloops()
 	names = []
 	for i in id_list:
@@ -39,7 +39,7 @@ def packages_with_selfloops(s, g=None):
 def package_degree_distribution_chart(s, filename, g=None):
 	"""Create a degree distribution chart."""
 	if not g:
-		g = create_graph(get_nodelist(s), get_edgelist(s))
+		g = create_graph(get_pkg_nodelist(s), get_pkg_edgelist(s))
 	deg_seq = sorted(nx.degree(g).values(), reverse=True)
 	plt.hist(deg_seq, bins=range(0, 20, 1), normed=True)
 	plt.xticks(range(0, 20, 1))
@@ -52,7 +52,7 @@ def package_degree_distribution_chart(s, filename, g=None):
 def package_in_degree_distribution_chart(s, filename, g=None):
 	"""Create a in degree distribution chart."""
 	if not g:
-		g = create_graph(get_nodelist(s), get_edgelist(s))(s))
+		g = create_graph(get_pkg_nodelist(s), get_pkg_edgelist(s))(s))
 	deg_seq = sorted(g.in_degree().values(), reverse=True)
 	plt.hist(deg_seq, bins=range(0, 20, 1), normed=True)
 	plt.xticks(range(0, 20, 1))
@@ -65,7 +65,7 @@ def package_in_degree_distribution_chart(s, filename, g=None):
 def package_out_degree_distribution_chart(s, filename, g=None):
 	"""Create a in degree distribution chart."""
 	if not g:
-		g = create_graph(get_nodelist(s), get_edgelist(s))
+		g = create_graph(get_pkg_nodelist(s), get_pkg_edgelist(s))
 	deg_seq = sorted(g.out_degree().values(), reverse=True)
 	plt.hist(deg_seq, bins=range(0, 20, 1), normed=True)
 	plt.xticks(range(0, 20, 1))
