@@ -1,5 +1,5 @@
 from ap import db
-from ap.analysis.requirements import get_edgelist
+from ap.analysis.common import get_edgelist
 from sqlalchemy import func
 import networkx as nx
 import matplotlib
