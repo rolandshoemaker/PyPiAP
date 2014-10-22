@@ -77,36 +77,3 @@ def find_named_ecosystems(s, cutoff=5):
 		return returner
 	# dot/dash search
 	return {'dot-ecosystems': name_searcher('.'), 'dash-ecosystems': name_searcher('-')}
-
-def framework_sizes_by_classifier(s):
-	"""Return dict of Frameworks and their size based on how many packages use their framework classifier."""
-	framework_trove = ['Framework :: BFG',
-		'Framework :: Bob',
-		'Framework :: Bottle',
-		'Framework :: Buildout',
-		'Framework :: Chandler',
-		'Framework :: CherryPy',
-		'Framework :: CubicWeb',
-		'Framework :: Django',
-		'Framework :: Flask',
-		'Framework :: IDLE',
-		'Framework :: IPython',
-		'Framework :: Opps',
-		'Framework :: Paste',
-		'Framework :: Plone',
-		'Framework :: Pylons',
-		'Framework :: Pyramid',
-		'Framework :: Review Board',
-		'Framework :: Scrapy',
-		'Framework :: Setuptools Plugin',
-		'Framework :: Trac',
-		'Framework :: Tryton',
-		'Framework :: TurboGears',
-		'Framework :: Twisted',
-		'Framework :: ZODB',
-		'Framework :: Zope2',
-		'Framework :: Zope3']
-	sizes = {}
-	for f in framework_trove:
-		sizes[f.split(' :: ')[1]] = s.query(db.Classifier.classifier).filter(db.Classifier.classifier==f).count()
-	return sizes
