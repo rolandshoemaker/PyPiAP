@@ -31,7 +31,7 @@ def current_size(s):
 
 def avg_size(s):
 	"""Return average size of releases in bytes."""
-	return s.query(func.avg(db.Release.size)).scalar()
+	return int(s.query(func.avg(db.Release.size)).scalar())
 
 def minmax_size(s):
 	"""Return the minimum and maximum release size in bytes as a tuple."""
@@ -40,7 +40,7 @@ def minmax_size(s):
 def avg_release_interval(s):
 	"""Return the average interval between releases."""
 	# Note this takes forever to run, probably could find a better way?
-	# oct 11 - this should be somewhat faster?
+	# oct 11 - this could be somewhat faster?
 	pkgs = s.query(db.Package).filter(db.Package.releases.any()).all()
 	time_dlts = []
 	for p in pkgs:

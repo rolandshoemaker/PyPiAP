@@ -3,14 +3,12 @@ from ap import builder, db
 
 import multiprocessing
 import schedule
-from redis import Redis
-redis = Redis()
-
-def web_server():
-	app.run()
 
 def rebuild():
 	builder.rebuild()
+
+def web_server():
+	app.run()
 
 d = multiprocessing.Process(name='ap-web_server', target=web_server)
 d.daemon = True

@@ -20,7 +20,7 @@ def no_releases(s):
 
 def no_urls(s):
 	"""Return total number of packages that have no urls."""
-	pass
+	retrun s.query(db.Packages.home_page).filter(db.Packages.home_page.in_(['UNKNOWN', None, '', 'None', 'none'])).count()
 
 def downloads(s):
 	"""Return dict containing download statistics for the index."""
@@ -49,7 +49,7 @@ def downloads_vs_indegree(s, filename):
 	plt.close()
 	return plot_data
 
-def top_required_packages(s, top=5):
+def top_required_packages(s, top=None):
 	"""Return list of top required packages and the number of times they are required."""
 	g = nx.DiGraph(get_pkg_edgelist(s))
 	indegs = list(g.in_degree().items())

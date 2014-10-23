@@ -87,6 +87,49 @@ class Build(stats_Base):
     packages_updated = Column(Integer)
     packages_removed = Column(Integer)
 
+class Analysis(stats_Base):
+    __tablename__ = 'general'
+    id = Column(Integer, primary_key=True)
+    build_id = Column(Integer, ForeignKey(Build.id))
+    build = relationship(Build, backref=backref('general', cascase='all, delete-orphan'))
+    # General
+    no_releases = Column(Integer)
+    no_url = Column(Integer)
+    total_downloads = Column(Integer)
+    total_current_downloads = Column(Integer)
+    downloads_last_day = Column(Integer)
+    downloads_last_week = Column(Integer)
+    downloads_last_month = Column(Integer)
+    top_required_packages = Column(PickleType)
+    named_ecosystems = Column(PickleType)
+    home_page_domains = Column(PickleType)
+    # Authors
+    top_authors = Column(PickleType)
+    unique_authors = Column(Integer)
+    multiple_authors = Column(Integer)
+    author_email_domains = Column(PickleType)
+    # Classifiers
+    top_classifiers = Column(PickleType)
+    framework_sizes_by_classifier = Column(PickleType)
+    nonpython_pkgs = Column(PickleType)
+    natural_language_distribution = Column(PickleType)
+    # Releases
+    total_releases = Column(Integer)
+    current_releases = Column(Integer)
+    average_download_per_release = Column(Integer)
+    major_version_distribution = Column(PickleType)
+    all_releases_size = Column(Integer)
+    current_releases_size = Column(Integer)
+    average_release_size = Column(Integer)
+    average_release_interval = Column(Interval)
+    average_release_age = Column(Interval)
+    # Requirements
+    strong_weak_package_connections = Column(PickleType)
+    packages_with_selfloops = Column(PickleType)
+    # Graphs
+    package_requirement_graph = Column(LargeBinary)
+    package_author_graph = Column(LargeBinary)
+
 json_engine = create_engine(config.db+'pypi-json')
 stats_engine = create_engine(config.db+'pypi-stats')
 json_Base.metadata.create_all(json_engine)
@@ -235,4 +278,7 @@ def insert_build(resync_results, analysis_results, s):
         packages_inserted=resync_results['packages_inserted'],
         packages_updated=resync_results['packages_updated'],
         packages_removed=resync_results['packages_removed'])
+    s.add(build)
+
+
     
