@@ -82,7 +82,9 @@ class Builds(stats_Base):
     pkgs_inserted = Column(Integer)
     pkgs_updated = Column(Integer)
     pkgs_removed = Column(Integer)
-
+    json_size = Column(Integer)
+    mirror_size = Column(Integer)
+    database_size = Column(Integer)
 
 json_engine = create_engine(config.db+'pypi-json')
 stats_engine = create_engine(config.db+'pypi-stats')
