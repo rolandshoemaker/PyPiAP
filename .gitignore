@@ -5,3 +5,4 @@ ap/config.py
 *.csv
 graphs/
 gexf-js/
+*.dump
