@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Interval, TIMESTAMP
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, update
@@ -70,6 +70,18 @@ class Requirement(json_Base):
 
 # Statistic collection tables
 stats_Base = declarative_base()
+
+class Builds(stats_Base):
+    __tablename__ = 'builds'
+    id = Column(Integer, primary_key=True)
+    build_timestamp = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
+    build_duration = Column(Interval)
+    index_count = Column(Integer)
+    real_count = Column(Integer)
+    phantom_count = Column(Integer)
+    pkgs_inserted = Column(Integer)
+    pkgs_updated = Column(Integer)
+    pkgs_removed = Column(Integer)
 
 
 json_engine = create_engine(config.db+'pypi-json')
@@ -183,7 +195,7 @@ def update_old(info, s):
 
     # just nuke and re introduce releases and requirements since idk the best way to do it now
     for r in s.query(Release).where(Package.id==package.id).all():
-    	s.delete(r) # *should* cascade to requirements?
+    	s.delete(r) # *should* cascade to requirements? ._.
 
     for version, pkgs in info['releases'].items():
         for i, p in enumerate(pkgs):

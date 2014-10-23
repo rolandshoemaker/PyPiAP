@@ -178,7 +178,7 @@ def resync():
     return {'index_count': index_len,
         'real_count': real_len,
         'phantom_count': phantom_size,
-        'pkgs_inserted': ins_num,
-        'pkgs_updated': upd_num,
-        'pkgs_removed': pkgs_removed,
+        'packages_inserted': ins_num,
+        'packages_updated': upd_num,
+        'packages_removed': pkgs_removed,
         'runtime': end_time - start_time}
