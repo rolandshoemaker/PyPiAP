@@ -61,19 +61,23 @@ def find_named_ecosystems(s, cutoff=5):
 	"""Return dict of named ecosystems and their sizes (split by . and - seperators.)"""
 	g = nx.DiGraph(get_pkg_edgelist(s))
 	# Consider something worthy of searching if its indegree is more or equal to cutoff
-	indegs = [i for i in g.in_degree.items() if i[1] => cutoff]
+	indegs = [i for i in g.in_degree().items() if i[1] >= cutoff]
 	search_names = []
 	for t in indegs:
-		pkg_name = s.query(db.Package).filter(db.Package.id==t[0]).first()
-		split_search = re.search('\w+[.-]', pkg_name)
-		if len(split_search.groups()) > 1 and pkg_name.split(split_char)[0] not in search_names:
+		split_char = ''
+		pkg_name = s.query(db.Package.name).filter(db.Package.id==t[0]).first()[0]
+		split_search = re.search('\w+([.-])', pkg_name)
+		if split_search and len(split_search.groups()) == 1:
 			split_char = split_search.group(1)
-			search_names.append(pkg_name.split(split_char)[0])
-	def name_searcher(sep_char):
-		returner = {}
-		for s in search_names:
-			name_count = s.query(db.Package.name).filter(db.Package.name.startswith(s+sep_char)).count()
-			returner[s] = name_count
+			if not pkg_name.split(split_char)[0] in search_names:
+				search_names.append(pkg_name.split(split_char)[0])
+	def name_searcher(sep_char, search_names):
+		returner = []
+		for n in search_names:
+			name_count = s.query(db.Package.name).filter(db.Package.name.startswith(n+sep_char)).count()
+			returner.append([n, name_count])
+		returner.sort(key=lambda tup: tup[1], reverse=True)
+		returner = [r for r in returner if r[1] > 0]
 		return returner
 	# dot/dash search
-	return {'dot-ecosystems': name_searcher('.'), 'dash-ecosystems': name_searcher('-')}
+	return {'dot-ecosystems': name_searcher('.', search_names), 'dash-ecosystems': name_searcher('-', search_names)}

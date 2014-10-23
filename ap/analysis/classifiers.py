@@ -605,23 +605,29 @@ def top_classifiers(s, limit=0):
 		# this is a lot!
 		return classifiers
 
-def _classifier_counter(class_list):
-	sizes = {}
+def _classifier_counter(class_list, s):
+	sizes = []
 	for f in class_list:
-		sizes[f.split(' :: ')[1]] = s.query(db.Classifier.classifier).filter(db.Classifier.classifier==f).count()
+		sizes.append([f.split(' :: ')[1], s.query(db.Classifier.classifier).filter(db.Classifier.classifier==f).count()])
 	return sizes
 
 def framework_sizes_by_classifier(s):
 	"""Return dict of Frameworks and their size based on how many packages use their framework classifier."""
 	frameworks = [c for c in all_classifiers if c.startswith('Framework') and len(c.split(' :: ')) == 2]
-	return _classifier_counter(frameworks)
+	results = _classifier_counter(frameworks, s)
+	results.sort(key=lambda tup: tup[1], reverse=True)
+	return results
 
 def nonpython_pkgs(s):
 	"""Return a dict of non-python Language classifiers and how many times they are used."""
-	languages = [c for c in classifiers.all_classifiers if c.startswith('Programming Language') and len(c.split(' :: ')) == 2 and not c.split(' :: ')[1] == 'Python']
-	return _classifier_counter(languages)
+	languages = [c for c in all_classifiers if c.startswith('Programming Language') and len(c.split(' :: ')) == 2 and not c.split(' :: ')[1] == 'Python']
+	results = _classifier_counter(languages, s)
+	results.sort(key=lambda tup: tup[1], reverse=True)
+	return results
 
 def natural_language_distribution(s):
 	"""Return a dict distribution of Natural Language classifiers."""
-	natural_languages = [c for c in classifiers.all_classifiers if c.startswith('Natural Language')]
-	return _classifier_counter(natural_languages)
+	natural_languages = [c for c in all_classifiers if c.startswith('Natural Language')]
+	results = _classifier_counter(natural_languages, s)
+	results.sort(key=lambda tup: tup[1], reverse=True)
+	return results
