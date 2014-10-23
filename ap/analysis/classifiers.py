@@ -605,18 +605,21 @@ def top_classifiers(s, limit=0):
 		# this is a lot!
 		return classifiers
 
+def _classifier_counter(class_list):
+	sizes = {}
+	for f in class_list:
+		sizes[f.split(' :: ')[1]] = s.query(db.Classifier.classifier).filter(db.Classifier.classifier==f).count()
+	return sizes
+
 def framework_sizes_by_classifier(s):
 	"""Return dict of Frameworks and their size based on how many packages use their framework classifier."""
 	frameworks = [c for c in all_classifiers if c.startswith('Framework') and len(c.split(' :: ')) == 2]
-	sizes = {}
-	for f in frameworks:
-		sizes[f.split(' :: ')[1]] = s.query(db.Classifier.classifier).filter(db.Classifier.classifier==f).count()
-	return sizes
+	return _classifier_counter(frameworks)
 
 def nonpython_pkgs(s):
 	"""Return a dict of non-python Language classifiers and how many times they are used."""
 	other_classifiers = [c for c in classifiers.all_classifiers if c.startswith('Programming Language') and len(c.split(' :: ')) == 2 and not c.split(' :: ')[1] == 'Python']
-	sizes = {}
-	for f in other_classifiers:
-		sizes[f.split(' :: ')[1]] = s.query(db.Classifier.classifier).filter(db.Classifier.classifier==f).count()
-	return sizes
+	return _classifier_counter(other_classifiers)
+
+def natural_language_distribution(s):
+	
