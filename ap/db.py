@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Interval, TIMESTAMP
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Interval, TIMESTAMP, PickleType, LargeBinary
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, update
