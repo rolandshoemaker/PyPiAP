@@ -618,8 +618,10 @@ def framework_sizes_by_classifier(s):
 
 def nonpython_pkgs(s):
 	"""Return a dict of non-python Language classifiers and how many times they are used."""
-	other_classifiers = [c for c in classifiers.all_classifiers if c.startswith('Programming Language') and len(c.split(' :: ')) == 2 and not c.split(' :: ')[1] == 'Python']
-	return _classifier_counter(other_classifiers)
+	languages = [c for c in classifiers.all_classifiers if c.startswith('Programming Language') and len(c.split(' :: ')) == 2 and not c.split(' :: ')[1] == 'Python']
+	return _classifier_counter(languages)
 
 def natural_language_distribution(s):
-	
+	"""Return a dict distribution of Natural Language classifiers."""
+	natural_languages = [c for c in classifiers.all_classifiers if c.startswith('Natural Language')]
+	return _classifier_counter(natural_languages)
