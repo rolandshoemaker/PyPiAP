@@ -71,17 +71,18 @@ class Requirement(json_Base):
 # Statistic collection tables
 stats_Base = declarative_base()
 
-class Builds(stats_Base):
+class Build(stats_Base):
     __tablename__ = 'builds'
     id = Column(Integer, primary_key=True)
     build_timestamp = Column(TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp())
-    build_duration = Column(Interval)
+    rebuild_duration = Column(Interval)
+    analysis_duration = Column(Interval)
     index_count = Column(Integer)
     real_count = Column(Integer)
     phantom_count = Column(Integer)
-    pkgs_inserted = Column(Integer)
-    pkgs_updated = Column(Integer)
-    pkgs_removed = Column(Integer)
+    packages_inserted = Column(Integer)
+    packages_updated = Column(Integer)
+    packages_removed = Column(Integer)
 
 
 json_engine = create_engine(config.db+'pypi-json')
@@ -222,3 +223,13 @@ def remove_dead(pkg_name, s):
     package = s.query(Package).filter(Package.name==pkg_name).first()
     s.delete(package)
     print('[sql:drop] removed records for '+pkg_name)
+
+def insert_build(resync_results, analysis_results, s):
+    build = db.Build(rebuild_duration=resync_results['runtime'],
+        analysis_duration=analysis_results['runtime'],
+        index_count=resync_results['index_count'],
+        real_count=resync_results['real_count'],
+        phantom_count=resync_results['phantom_count'],
+        packages_inserted=resync_results['packages_inserted'],
+        packages_updated=resync_results['packages_updated'],
+        packages_removed=resync_results['packages_removed'])
