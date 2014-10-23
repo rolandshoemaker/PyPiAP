@@ -233,3 +233,4 @@ def insert_build(resync_results, analysis_results, s):
         packages_inserted=resync_results['packages_inserted'],
         packages_updated=resync_results['packages_updated'],
         packages_removed=resync_results['packages_removed'])
+    
