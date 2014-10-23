@@ -46,5 +46,5 @@ def graph_to_pickle(g):
 	return pickle.dumps(g, pickle.HIGHEST_PROTOCOL)
 
 def pickle_to_graph(pickle):
-	"""Return NetworkX graph from a Pickle."""
+	"""Return a NetworkX graph from a Pickle."""
 	return pickle.loads(pickle)

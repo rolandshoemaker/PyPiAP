@@ -6,6 +6,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import re
+from urllib.parse import urlparse
+from collections import Counter
 
 def pkg_num(s):
 	"""Return total number of packages that actually exist on the index."""
@@ -81,3 +83,13 @@ def find_named_ecosystems(s, cutoff=5):
 		return returner
 	# dot/dash search
 	return {'dot-ecosystems': name_searcher('.', search_names), 'dash-ecosystems': name_searcher('-', search_names)}
+
+def home_page_domains(s, cutoff=5):
+	urls = [u[0] for u in s.query(db.Package.home_page).all() if u[0]]
+	for i, u in enumerate(urls):
+		parsed = urlparse(u)
+		if parsed.netloc:
+			urls[i] = parsed.netloc.lower()
+	results = [c for c in Counter(urls).items() if c[1] >= cutoff]
+	results.sort(key=lambda tup: tup[1], reverse=True)
+	return results

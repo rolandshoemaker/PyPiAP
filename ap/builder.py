@@ -72,7 +72,7 @@ def clean_json_folder(pkg_list):
             removed += 1
     return removed
 
-def resync():
+def resync(s):
     """Update the package package index and incorporate those changes into pypi-json."""
     worker_num = 5
     pkg_queue = Queue()
@@ -100,9 +100,6 @@ def resync():
        t.start()    
 
     pkg_queue.join()
-
-    # Open db session
-    s = make_session(db.json_engine)
 
     # Get list of all json files.
     folder_list = [ f for f in listdir('/PyPiAP/json/') if isfile(join('/PyPiAP/json/',f)) ]
@@ -182,3 +179,21 @@ def resync():
         'packages_updated': upd_num,
         'packages_removed': pkgs_removed,
         'runtime': end_time - start_time}
+
+def analyze(s):
+
+def rebuild():
+    s = db.make_session(db.json_engine)
+
+    # resync the JSON db (pypi-json)
+    resync_results = resync(s)
+
+    # run analysis methods
+    analysis_results = analyze(s)
+
+    # add resync results + analysis results to stats db (pypi-stats)
+    # implement some kind of lock on the stats db while this is happening? (/put website into maintenance mode/copy stats db, alter, merge into old...?)
+    db.insert_build(resync_results, analysis_results, s)
+    s.commit()
+    s.close()
+    
