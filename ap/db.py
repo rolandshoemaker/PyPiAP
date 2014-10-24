@@ -279,6 +279,48 @@ def insert_build(resync_results, analysis_results, s):
         packages_updated=resync_results['packages_updated'],
         packages_removed=resync_results['packages_removed'])
     s.add(build)
+    print('[sql:insert] inserted new build #'+str(build.id))
+    analaysis = db.Analysis(build=build,
+        # General
+        no_releases=analysis_results['no_releases'],
+        no_url=analysis_results['no_url'],
+        total_downloads=analysis_results['total_downloads'],
+        total_current_downloads=analysis_results['total_current_downloads'],
+        downloads_last_day=analysis_results['downloads_last_day'],
+        downloads_last_week=analysis_results['downloads_last_week'],
+        downloads_last_month=analysis_results['downloads_last_month'],
+        top_required_packages=analysis_results['top_required_packages'],
+        named_ecosystems=analysis_results['named_ecosystems'],
+        home_page_domains=analysis_results['home_page_domains'],
+        # Authors
+        top_authors=analysis_results['top_authors'],
+        unique_authors=analysis_results['unique_authors'],
+        multiple_authors=analysis_results['multiple_authors'],
+        author_email_domains=analysis_results['author_email_domains'],
+        # Classifiers
+        top_classifiers=analysis_results['top_classifiers'],
+        framework_sizes_by_classifier=analysis_results['framework_sizes_by_classifier'],
+        nonpython_pkgs=analysis_results['nonpython_pkgs'],
+        natural_language_distribution=analysis_results['natural_language_distribution'],
+        # Releases
+        total_releases=analysis_results['total_releases'],
+        current_releases=analysis_results['current_releases'],
+        average_download_per_release=analysis_results['average_download_per_release'],
+        major_version_distribution=analysis_results['major_version_distribution'],
+        all_releases_size=analysis_results['all_releases_size'],
+        current_releases_size=analysis_results['current_releases_size'],
+        average_release_size=analysis_results['average_release_size'],
+        average_release_interval=analysis_results['average_release_interval'],
+        average_release_age=analysis_results['average_release_age'],
+        # Requirements
+        strong_weak_package_connections=analysis_results['strong_weak_package_connections'],
+        packages_with_selfloops=analysis_results['packages_with_selfloops'],
+        # Graphs
+        package_requirement_graph=analysis_results['package_requirement_graph'],
+        package_author_graph=analysis['package_author_graph'])
+    s.add(analysis)
+    print('[sql:insert] inserted analysis for build #'+str(build.id))
+
 
 
     

@@ -31,9 +31,10 @@ def downloads(s):
 	    'last_week': downloads[3],
 	    'last_month': downloads[4]}
 
-def downloads_vs_indegree(s, filename):
+def downloads_vs_indegree(s, filename, g=None):
 	"""Create chart of the number of downloads per package vs. the number of times it is required, and return this data as a dict."""
-	g = nx.DiGraph(get_pkg_edgelist(s))
+	if not g:
+		g = nx.DiGraph(get_pkg_edgelist(s))
 	plot_data = []
 	for n in g.nodes():
 		plot_data.append([g.in_degree(n), s.query(func.sum(db.Release.downloads)).filter(db.Release.current==True).filter(db.Release.package_id==n).first()[0]])
@@ -49,9 +50,10 @@ def downloads_vs_indegree(s, filename):
 	plt.close()
 	return plot_data
 
-def top_required_packages(s, top=None):
+def top_required_packages(s, top=None, g=None):
 	"""Return list of top required packages and the number of times they are required."""
-	g = nx.DiGraph(get_pkg_edgelist(s))
+	if not g:
+		g = nx.DiGraph(get_pkg_edgelist(s))
 	indegs = list(g.in_degree().items())
 	indegs.sort(key=lambda tup: tup[1], reverse=True)
 	named_top = []
@@ -59,9 +61,10 @@ def top_required_packages(s, top=None):
 		named_top.append([s.query(db.Package).filter(db.Package.id==t[0]).first(), t[1]])
 	return named_top
 
-def find_named_ecosystems(s, cutoff=5):
+def find_named_ecosystems(s, cutoff=5, g=None):
 	"""Return dict of named ecosystems and their sizes (split by . and - seperators.)"""
-	g = nx.DiGraph(get_pkg_edgelist(s))
+	if not g:
+		g = nx.DiGraph(get_pkg_edgelist(s))
 	# Consider something worthy of searching if its indegree is more or equal to cutoff
 	indegs = [i for i in g.in_degree().items() if i[1] >= cutoff]
 	search_names = []

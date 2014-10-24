@@ -29,7 +29,6 @@ def get_author_edgelist(s):
 	"""Return edge list for Author->Package graph."""
 	return s.query(db.Package.id, db.Requirement.requirement_id).join(db.Release).filter(db.Release.id==db.Requirement.release_id).filter(db.Release.current==True).filter(db.Requirement.requirement_id.__ne__(None)).all()
 
-
 def tuplelist_to_csv(edgelist, filename):
 	"""Write list(/list of tuples) to CSV for import into something like Gephi."""
 	with open(filename, 'w') as out:

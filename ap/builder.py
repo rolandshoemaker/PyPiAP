@@ -181,6 +181,62 @@ def resync(s):
         'runtime': end_time - start_time}
 
 def analyze(s):
+    start_time = datetime.datetime.now()
+
+    # Graphs
+    graphs = {}
+    graphs['package_requirement_graph'] = create_graph(get_pkg_nodelist(s), get_pkg_edgelist(s))
+    graphs['package_author_graph'] = create_graph(get_author_nodelist(s), get_author_edgelist(s))
+    # General
+    general = {}
+    general['no_releases'] = ap.analysis.general.no_releases(s)
+    general['no_urls'] = ap.analysis.general.no_urls(s)
+    download_dict = ap.analysis.general.downloads(s)
+    general['total_downloads'] = download_dict['all_time_total']
+    general['total_current_downloads'] = download_dict['current_total']
+    general['downloads_last_day'] = download_dict['last_day']
+    general['downloads_last_week'] = download_dict['last_week']
+    general['downloads_last_month'] = download_dict['last_month']
+    general['top_required_packages'] = ap.analysis.general.top_required_packages(s, g=graphs['package_requirement_graph'])
+    general['named_ecosystems'] = ap.analysis.general.find_named_ecosystems(s, cutoff=0, g=graphs['package_requirement_graph'])
+    general['home_page_domains'] = ap.analysis.general.home_page_domains(s, cutoff=0)
+    # Authors
+    author = {}
+    author['top_authors'] = ap.analysis.authors.top_authors(s)
+    author['unique_authors'] = ap.analysis.authors.unique_authors(s)
+    author['multiple_authors'] = ap.analysis.authors.multiple_authors(s)
+    author['author_email_domains'] = ap.analysis.authors.author_email_domains(s, cutoff=0)
+    # Classifiers
+    classifier = {}
+    classifier['top_classifiers'] = ap.analysis.classifiers.top_classifiers(s, cutoff=0)
+    classifier['framework_sizes_by_classifier'] = ap.analysis.classifiers.framework_sizes_by_classifier(s)
+    classifier['nonpython_pkgs'] = ap.analysis.classifiers.nonpython_pkgs(s)
+    classifier['natural_language_distribution'] = ap.analysis.classifiers.natural_language_distribution(s)
+    # Releases
+    release = {}
+    release['total_releases'] = ap.analysis.releases.num(s)
+    release['current_releases'] = ap.analysis.releases.current_num(s)
+    release['average_download_per_release'] = ap.analysis.releases.avg_downloads(s)
+    release['major_version_distribution'] = ap.analysis.releases.major_version_distribution(s)
+    release['all_releases_size'] = ap.analysis.releases.total_size(s)
+    release['current_releases_size'] = ap.analysis.releases.current_size(s)
+    release['average_release_size'] = ap.analysis.releases.avg_size(s)
+    release['average_release_interval'] = ap.analysis.releases.avg_release_interval(s)
+    release['average_release_age'] = ap.analysis.releases.avg_release_age(s)
+    # Requirements
+    requirement = {}
+    requirement['strong_weak_package_connections'] = ap.analysis.requirements.strong_weak_package_connections(s, g=graphs['package_requirement_graph'])
+    requirement['packages_with_selfloops'] = ap.analysis.requirements.packages_with_selfloops(s, g=graphs['package_requirement_graph'])
+
+    end_time = datetime.datetime.now()
+
+    return {'runtime': end_time - start_time,
+        'General': general,
+        'Authors': author,
+        'Classifiers': classifier,
+        'Releases': release,
+        'Requirements': requirement,
+        'Graphs:': graphs}
 
 def rebuild():
     s = db.make_session(db.json_engine)
@@ -192,7 +248,6 @@ def rebuild():
     analysis_results = analyze(s)
 
     # add resync results + analysis results to stats db (pypi-stats)
-    # implement some kind of lock on the stats db while this is happening? (/put website into maintenance mode/copy stats db, alter, merge into old...?)
     db.insert_build(resync_results, analysis_results, s)
     s.commit()
     s.close()
