@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Interval, TIMESTAMP, PickleType, LargeBinary
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, update
+from sqlalchemy import create_engine, update, func
 from sqlalchemy.orm import sessionmaker, scoped_session
 import datetime
 from time import strptime
@@ -142,7 +142,7 @@ def make_session(engine, autoflush=True, autocommit=False, scoped=False):
     else:
         session = scoped_session(sessionmaker())
         session.configure(autoflush=autoflush, autocommit=autocommit, bind=engine)
-	return session()
+    return session()
 
 def insert_new(info, s):
     """Add a new set of records based on json."""
@@ -284,7 +284,7 @@ def insert_build(resync_results, analysis_results, s):
         packages_removed=resync_results['packages_removed'])
     s.add(build)
     print('[sql:insert] inserted new build #'+str(build.id))
-    
+
     analaysis = db.Analysis(build=build,
         # General
         no_releases=analysis_results['no_releases'],
