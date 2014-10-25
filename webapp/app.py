@@ -25,7 +25,7 @@ def not_found(error=None):
 def options_object(prefix, options):
 	returner = {}
 	for o in options:
-		returner['o']['url'] = config.url+prefix+o
+		returner[o]['url'] = config.url+prefix+o
 	return returner
 
 # API routes
@@ -42,13 +42,22 @@ def api_index():
 	return jsonify(resources)
 
 # General
-general_options = ['all']
+general_options = ['all',
+	'no_releases',
+	'no_url',
+	'total_downloads',
+	'total_current_downloads',
+	'downloads_last_day',
+	'downloads_last_week',
+	'downloads_last_month',
+	'top_required_packages',
+	'named_ecosystems',
+	'home_page_domains']
 @app.route('/api/v1/general')
 def api_general():
 	resources = {'url': config.url+'api/v1/general',
-		'resources': {}
+		'resources': options_object('api/v1/general/', general_options)
 	}
-	resources['resources'] = options_object('api/v1/general/', general_options)
 	return jsonify(resources)
 
 @app.route('/api/v1/general/<option>')
