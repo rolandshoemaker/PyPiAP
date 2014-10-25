@@ -38,8 +38,7 @@ def api_index():
 	endpoints = [config.url+str(i) for i in app.url_map.iter_rules() if str(i).startswith('/api/v1/') and len(str(i).split('/')) == 4]
 	for e in endpoints:
 		if not e.split('/')[-1] == '':
-			resources['resources'][e.split('/')[-1]] = {}
-			resources['resources'][e.split('/')[-1]]['url'] = e
+			resources['resources'][e.split('/')[-1]] = {'url': e}
 	return jsonify(resources)
 
 # General
