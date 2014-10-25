@@ -91,8 +91,8 @@ def api_general(build_id):
 		general_analysis = [s.query(db.General_analysis).order_by('-id').first()]
 	elif request.args.get('timeseries', None) and not build_id:
 		# pagination here?
-		offset = request.args.get('offset', None)
-		limit = request.args.get('limit', None)
+		offset = request.args.get('offset', 0)
+		limit = request.args.get('limit', 20)
 		# something here to generate series of id's from two dates...
 		timeseries_ids = request.args.get('timeseries').split(',')
 		paged_ids, paged_links = api_pager(timeseries_ids, '/api/v1/general', offset, limit)
@@ -108,7 +108,7 @@ def api_general(build_id):
 	else:
 		# impl sort here?
 		columns = [api_build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis]
-		resp = Response(jsonify(columns, status=200, mimetype='application/json')
+		resp = Response(jsonify(columns, status=200, mimetype='application/json'))
 		if paged_links: resp.headers['Link'] = paged_links
 		return resp
 
@@ -120,12 +120,12 @@ def api_general_top_required_packages(build_id):
 
 @app.route('/api/v1/general/named_ecosystems', defaults={'build_id': None})
 @app.route('/api/v1/general/named_ecosystems/<int:build_id>')
-def api_general_top_required_packages(build_id):
+def api_general_named_ecosystems(build_id):
 	pass
 
 @app.route('/api/v1/general/home_page_domains', defaults={'build_id': None})
 @app.route('/api/v1/general/home_page_domains/<int:build_id>')
-def api_general_top_required_packages(build_id):
+def api_general_home_page_domains(build_id):
 	pass
 
 # Authors
