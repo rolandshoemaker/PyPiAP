@@ -22,9 +22,9 @@ def not_found(error=None):
 	resp.status_code = 404
 	return resp
 
-def api_pager(thing, route, offset=0, limit=20):
+def api_pager(ids, route, offset=0, limit=20):
 	if not 'X-Total-Count' in request.headers:
-		thing_length = len(thing)-1 # does this need to be -1?
+		thing_length = len(ids)-1 # does this need to be -1?
 		if thing_length >= limit:
 			first_page = [config.url+route+'?offset=0&limit='+str(limit), 'first']
 			last_page = [config.url+route+'?offset='+str(thing_length-(thing_length%limit))+'&limit='+str(thing_length%limit), 'last']
@@ -36,23 +36,23 @@ def api_pager(thing, route, offset=0, limit=20):
 			return not_found() # bail since asking for range thats not existy, better error code..?
 		next_page = ['', 'next']
 		prev_page = ['', 'last']
-		resp = Response(jsonify(things[offset:offset+limit]), status=200, mimetype='application/json')
-		resp.headers['Link'] = ['<'+i[0]+'>; rel="'+i[1]+'"' for i in [first_page, last_page, next_page, prev_page]].join(',\n')
-		return resp
+		#resp = Response(jsonify(things[offset:offset+limit]), status=200, mimetype='application/json')
+		page_links = ['<'+i[0]+'>; rel="'+i[1]+'"' for i in [first_page, last_page, next_page, prev_page]].join(',\n')
+		return ids[offset:offset+limit], page_links
 	else:
-		return jsonify(thing)
+		return ids, None
 
 def api_object_pager():
 	pass
 
-def build_analysis_to_json(build, prefix, normal_columns, big_columns):
+def api_build_analysis_to_json(build, prefix, normal_columns, big_columns):
 	returner = {'build_id': build.build_id,
 		'build_timestamp': build.build.build_timestamp,
 		'analysis': {}}
-	filter = request.args.get('fields', None)
+	filters = request.args.get('fields', None)
 
-	if filter:
-		filters = filter.split(',')
+	if filters:
+		filters = filters.split(',')
 		normal_columns, big_columns = [c for c in normal_columns if c in filters], [c for c in big_columns if c in filters]
 
 	for c in normal_columns:
@@ -62,6 +62,9 @@ def build_analysis_to_json(build, prefix, normal_columns, big_columns):
 		returner['analysis'][c] = {'url': config.url+prefix+'/'+c+'/'+build.build_id}
 
 	return returner
+
+def api_analysis_table():
+	pass
 
 # API routes
 # return all the top level resources
@@ -80,25 +83,35 @@ def api_index():
 @app.route('/api/v1/general', defaults={'build_id': None})
 @app.route('/api/v1/general/<int:build_id>')
 def api_general(build_id):
-	# allow time series query here (mb decorator), if no query return most recent build
 	normal = ['no_releases', 'no_url', 'total_downloads', 'total_current_downloads', 'downloads_last_day', 'downloads_last_week', 'downloads_last_month']
 	objects = ['top_required_packages', 'named_ecosystems', 'home_page_domains']
 
+	# allow time series query here (mb decorator), if no query return most recent build
 	if not build_id:
 		general_analysis = [s.query(db.General_analysis).order_by('-id').first()]
-	elif request.args.get('timeseries', None):
+	elif request.args.get('timeseries', None) and not build_id:
 		# pagination here?
-		timeseries_ids = []
-		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in timeseries_ids]
-	else:
+		offset = request.args.get('offset', None)
+		limit = request.args.get('limit', None)
+		# something here to generate series of id's from two dates...
+		timeseries_ids = request.args.get('timeseries').split(',')
+		paged_ids, paged_links = api_pager(timeseries_ids, '/api/v1/general', offset, limit)
+		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in paged_ids]
+	elif build_id:
 		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==build_id).first()]
+	else:
+		return not_found()
 
 	if len(general_analysis) < 1:
 		# bad build_id, probably better error code?
 		return not_found()
 	else:
 		# impl sort here?
-		return jsonify([build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis])
+		columns = [api_build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis]
+		resp = Response(jsonify(columns, status=200, mimetype='application/json')
+		if paged_links: resp.headers['Link'] = paged_links
+		return resp
+
 
 @app.route('/api/v1/general/top_required_packages', defaults={'build_id': None})
 @app.route('/api/v1/general/top_required_packages/<int:build_id>')
