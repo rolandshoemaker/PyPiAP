@@ -42,15 +42,22 @@ def api_results_pager(thing, route, offset=0, limit=20):
 	else:
 		return jsonify(thing)
 
-def analysis_to_json(build, prefix, normal_columns, big_columns):
-	# add filtering+sorting+field select here?
+def build_analysis_to_json(build, prefix, normal_columns, big_columns):
 	returner = {'build_id': build.build_id,
 		'build_timestamp': build.build.build_timestamp,
 		'analysis': {}}
+	filter = request.args.get('fields', None)
+
+	if filter:
+		filters = filter.split(',')
+		normal_columns, big_columns = [c for c in normal_columns if c in filters], [c for c in big_columns if c in filters]
+
 	for c in normal_columns:
 		returner['analysis'][c] = build.__dict__[c]
+
 	for c in big_columns:
 		returner['analysis'][c] = {'url': config.url+prefix+'/'+c+'/'+build.build_id}
+
 	return returner
 
 # API routes
@@ -67,36 +74,42 @@ def api_index():
 	return jsonify(resources)
 
 # General
-@app.route('/api/v1/general')
-def api_general():
-	current_analysis = s.query(db.General_analysis).order_by('-id').first()
-	normal = ['no_url', 'total_downloads', 'total_current_downloads', 'downloads_last_day', 'downloads_last_week', 'downloads_last_month']
+@app.route('/api/v1/general', defaults={'build_id': None})
+@app.route('/api/v1/general/<int:build_id>')
+def api_general(build_id):
+	# allow time series query here (mb decorator), if no query return most recent build
+	normal = ['no_releases', 'no_url', 'total_downloads', 'total_current_downloads', 'downloads_last_day', 'downloads_last_week', 'downloads_last_month']
 	objects = ['top_required_packages', 'named_ecosystems', 'home_page_domains']
-	return jsonify(analysis_to_json(current_analysis, '/api/v1/general', normal, objects))
-	# return jsonify({'build_id': current_analysis.build_id,
-	# 	'build_timestamp': s.query(db.Build.build_timestamp).filter(db.Build.id==current_analysis.build_id).first()[0],
-	# 	'analysis': {'no_releases': current_analysis.no_releases,
-	# 		'no_url': current_analysis.no_url,
-	# 		'total_downloads': current_analysis.total_downloads,
-	# 		'total_current_downloads': current_analysis.total_current_downloads,
-	# 		'downloads_last_day': current_analysis.downloads_last_day,
-	# 		'downloads_last_week': current_analysis.downloads_last_week,
-	# 		'downloads_last_month': current_analysis.downloads_last_month,
-	# 		'top_required_packages': {'url': config.url+'/api/v1/general/top_required_packages/'+current_analysis.build_id},
-	# 		'named_ecosystems': {'url': config.url+'/api/v1/general/named_ecosystems/'+current_analysis.build_id},
-	# 		'home_page_domains': {'url': config.url+'/api/v1/general/home_page_domains/'+current_analysis.build_id}
-	# })
 
+	if not build_id:
+		general_analysis = [s.query(db.General_analysis).order_by('-id').first()]
+	elif request.args.get('timeseries', None):
+		# pagination here?
+		timeseries_ids = []
+		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in timeseries_ids]
+	else:
+		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==build_id).first()]
+
+	if len(general_analysis) < 1:
+		# bad build_id, probably better error code?
+		return not_found()
+	else:
+		# impl sort here?
+		return jsonify([build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis])
+
+@app.route('/api/v1/general/top_required_packages', defaults={'build_id': None})
 @app.route('/api/v1/general/top_required_packages/<int:build_id>')
-def api_general_top_required_packages(build_id=None):
+def api_general_top_required_packages(build_id):
 	pass
 
+@app.route('/api/v1/general/named_ecosystems', defaults={'build_id': None})
 @app.route('/api/v1/general/named_ecosystems/<int:build_id>')
-def api_general_top_required_packages(build_id=None):
+def api_general_top_required_packages(build_id):
 	pass
 
+@app.route('/api/v1/general/home_page_domains', defaults={'build_id': None})
 @app.route('/api/v1/general/home_page_domains/<int:build_id>')
-def api_general_top_required_packages(build_id=None):
+def api_general_top_required_packages(build_id):
 	pass
 
 # Authors

@@ -82,7 +82,7 @@ def find_named_ecosystems(s, cutoff=5, g=None):
 			name_count = s.query(db.Package.name).filter(db.Package.name.startswith(n+sep_char)).count()
 			returner.append([n, name_count])
 		returner.sort(key=lambda tup: tup[1], reverse=True)
-		returner = [r for r in returner if r[1] > 0]
+		returner = [r for r in returner if r[1] > 1]
 		return returner
 	# dot/dash search
 	return {'dot-ecosystems': name_searcher('.', search_names), 'dash-ecosystems': name_searcher('-', search_names)}
