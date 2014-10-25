@@ -1,6 +1,6 @@
 from ap import db, config
 
-from flask import Flask, request, render_template, jsonify, url_for
+from flask import Flask, request, render_template, jsonify, url_for, Response
 import urllib.parse
 # Maybe split front-end and api routes into different files? (not really sure how to do this)
 app = Flask(__name__)
@@ -27,6 +27,23 @@ def options_object(prefix, options):
 	for o in options:
 		returner[o]['url'] = config.url+prefix+o
 	return returner
+
+def api_results_pager(thing, route, offset=0, limit=20):
+	if not 'X-Total-Count' in request.headers:
+		thing_length = len(thing)
+		if thing_length >= limit:
+			first_page = [config.url+route+'?offset=0&limit='+str(limit), 'first']
+			last_page = [config.url+route+'?offset='+str(thing_length-(thing_length%limit))+'&limit='+str(thing_length%limit), 'last']
+		else:
+			first_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'first']
+			last_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'last']
+		next_page = ['', 'next']
+		prev_page = ['', 'last']
+		resp = Response(jsonify(things[offset:offset+limit]), status=200, mimetype='application/json')
+		resp.headers['Link'] = ['<'+i[0]+'>; rel="'+i[1]+'",' for i in [first_page, last_page, next_page, prev_page]].join('\n')
+		return 
+	else:
+		return thing
 
 # API routes
 # return all the top level resources
@@ -87,11 +104,6 @@ def api_requirements():
 # Graphs
 @app.route('/api/v1/graphs')
 def api_graphs():
-	pass
-
-# Tarballs
-@app.route('/api/v1/tarballs')
-def api_tarballs():
 	pass
 
 if __name__ == '__main__':
