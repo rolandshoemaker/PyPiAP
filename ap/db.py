@@ -87,11 +87,11 @@ class Build(stats_Base):
     packages_updated = Column(Integer)
     packages_removed = Column(Integer)
 
-class Analysis(stats_Base):
-    __tablename__ = 'general'
+class General_analysis(stats_Base):
+    __tablename__ = 'general_analysis'
     id = Column(Integer, primary_key=True)
     build_id = Column(Integer, ForeignKey(Build.id))
-    build = relationship(Build, backref=backref('general', cascase='all, delete-orphan'))
+    build = relationship(Build, backref=backref('general', cascade='all, delete-orphan'))
     # General
     no_releases = Column(Integer)
     no_url = Column(Integer)
@@ -103,16 +103,34 @@ class Analysis(stats_Base):
     top_required_packages = Column(PickleType)
     named_ecosystems = Column(PickleType)
     home_page_domains = Column(PickleType)
+
+class Author_analysis(stats_Base):
+    __tablename__ = 'author_analysis'
+    id = Column(Integer, primary_key=True)
+    build_id = Column(Integer, ForeignKey(Build.id))
+    build = relationship(Build, backref=backref('authors', cascade='all, delete-orphan'))
     # Authors
     top_authors = Column(PickleType)
     unique_authors = Column(Integer)
     multiple_authors = Column(Integer)
     author_email_domains = Column(PickleType)
+
+class Classifier_analysis(stats_Base):
+    __tablename__ = 'classifier_analysis'
+    id = Column(Integer, primary_key=True)
+    build_id = Column(Integer, ForeignKey(Build.id))
+    build = relationship(Build, backref=backref('classifiers', cascade='all, delete-orphan'))
     # Classifiers
     top_classifiers = Column(PickleType)
     framework_sizes_by_classifier = Column(PickleType)
     nonpython_pkgs = Column(PickleType)
     natural_language_distribution = Column(PickleType)
+
+class Release_analysis(stats_Base):
+    __tablename__ = 'release_analysis'
+    id = Column(Integer, primary_key=True)
+    build_id = Column(Integer, ForeignKey(Build.id))
+    build = relationship(Build, backref=backref('releases', cascade='all, delete-orphan'))
     # Releases
     total_releases = Column(Integer)
     current_releases = Column(Integer)
@@ -123,9 +141,21 @@ class Analysis(stats_Base):
     average_release_size = Column(Integer)
     average_release_interval = Column(Interval)
     average_release_age = Column(Interval)
+
+class Requirements_analysis(stats_Base):
+    __tablename__ = 'requirement_analysis'
+    id = Column(Integer, primary_key=True)
+    build_id = Column(Integer, ForeignKey(Build.id))
+    build = relationship(Build, backref=backref('requirements', cascade='all, delete-orphan'))
     # Requirements
     strong_weak_package_connections = Column(PickleType)
     packages_with_selfloops = Column(PickleType)
+
+class Graph_analysis(stats_Base):
+    __tablename__ = 'graph_analysis'
+    id = Column(Integer, primary_key=True)
+    build_id = Column(Integer, ForeignKey(Build.id))
+    build = relationship(Build, backref=backref('graphs', cascade='all, delete-orphan'))
     # Graphs
     package_requirement_graph = Column(LargeBinary)
     package_author_graph = Column(LargeBinary)
@@ -285,8 +315,8 @@ def insert_build(resync_results, analysis_results, s):
     s.add(build)
     print('[sql:insert] inserted new build #'+str(build.id))
 
-    analaysis = db.Analysis(build=build,
-        # General
+    # General
+    general_analaysis = db.General_nalysis(build=build,
         no_releases=analysis_results['no_releases'],
         no_url=analysis_results['no_url'],
         total_downloads=analysis_results['total_downloads'],
@@ -296,18 +326,24 @@ def insert_build(resync_results, analysis_results, s):
         downloads_last_month=analysis_results['downloads_last_month'],
         top_required_packages=analysis_results['top_required_packages'],
         named_ecosystems=analysis_results['named_ecosystems'],
-        home_page_domains=analysis_results['home_page_domains'],
-        # Authors
+        home_page_domains=analysis_results['home_page_domains'])
+    s.add(general_analysis)
+    # Authors
+    author_analaysis = db.Author_Analysis(build=build,
         top_authors=analysis_results['top_authors'],
         unique_authors=analysis_results['unique_authors'],
         multiple_authors=analysis_results['multiple_authors'],
-        author_email_domains=analysis_results['author_email_domains'],
-        # Classifiers
+        author_email_domains=analysis_results['author_email_domains'])
+    s.add(author_analysis)
+    # Classifiers
+    classifier_analaysis = db.Classifier_analysis(build=build,
         top_classifiers=analysis_results['top_classifiers'],
         framework_sizes_by_classifier=analysis_results['framework_sizes_by_classifier'],
         nonpython_pkgs=analysis_results['nonpython_pkgs'],
-        natural_language_distribution=analysis_results['natural_language_distribution'],
-        # Releases
+        natural_language_distribution=analysis_results['natural_language_distribution'])
+    s.add(classifier_analysis)
+    # Releases
+    release_analaysis = db.Release_Analysis(build=build,
         total_releases=analysis_results['total_releases'],
         current_releases=analysis_results['current_releases'],
         average_download_per_release=analysis_results['average_download_per_release'],
@@ -316,12 +352,16 @@ def insert_build(resync_results, analysis_results, s):
         current_releases_size=analysis_results['current_releases_size'],
         average_release_size=analysis_results['average_release_size'],
         average_release_interval=analysis_results['average_release_interval'],
-        average_release_age=analysis_results['average_release_age'],
-        # Requirements
+        average_release_age=analysis_results['average_release_age'])
+    s.add(release_analysis)
+    # Requirements
+    requirement_analaysis = db.Requirement_nalysis(build=build,
         strong_weak_package_connections=analysis_results['strong_weak_package_connections'],
-        packages_with_selfloops=analysis_results['packages_with_selfloops'],
-        # Graphs
+        packages_with_selfloops=analysis_results['packages_with_selfloops'])
+    s.add(requirement_analysis)
+    # Graphs
+    graph_analaysis = db.Graph_analysis(build=build,
         package_requirement_graph=analysis_results['package_requirement_graph'],
         package_author_graph=analysis['package_author_graph'])
-    s.add(analysis)
-    print('[sql:insert] inserted analysis for build #'+str(build.id))
+    s.add(graph_analysis)
+    print('[sql:insert] inserted analysis tables for build #'+str(build.id))
