@@ -30,20 +30,23 @@ def options_object(prefix, options):
 
 def api_results_pager(thing, route, offset=0, limit=20):
 	if not 'X-Total-Count' in request.headers:
-		thing_length = len(thing)
+		thing_length = len(thing) # does this need to be -1?
 		if thing_length >= limit:
 			first_page = [config.url+route+'?offset=0&limit='+str(limit), 'first']
 			last_page = [config.url+route+'?offset='+str(thing_length-(thing_length%limit))+'&limit='+str(thing_length%limit), 'last']
 		else:
 			first_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'first']
 			last_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'last']
+			limit = thing_length
+		if offset+limit > thing_length:
+			return not_found() # bail since asking for range thats not existy, better error code..?
 		next_page = ['', 'next']
 		prev_page = ['', 'last']
 		resp = Response(jsonify(things[offset:offset+limit]), status=200, mimetype='application/json')
 		resp.headers['Link'] = ['<'+i[0]+'>; rel="'+i[1]+'",' for i in [first_page, last_page, next_page, prev_page]].join('\n')
 		return 
 	else:
-		return thing
+		return jsonify(thing)
 
 # API routes
 # return all the top level resources
