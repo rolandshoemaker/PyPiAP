@@ -22,9 +22,9 @@ def not_found(error=None):
 	resp.status_code = 404
 	return resp
 
-def api_results_pager(thing, route, offset=0, limit=20):
+def api_pager(thing, route, offset=0, limit=20):
 	if not 'X-Total-Count' in request.headers:
-		thing_length = len(thing) # does this need to be -1?
+		thing_length = len(thing)-1 # does this need to be -1?
 		if thing_length >= limit:
 			first_page = [config.url+route+'?offset=0&limit='+str(limit), 'first']
 			last_page = [config.url+route+'?offset='+str(thing_length-(thing_length%limit))+'&limit='+str(thing_length%limit), 'last']
@@ -38,9 +38,12 @@ def api_results_pager(thing, route, offset=0, limit=20):
 		prev_page = ['', 'last']
 		resp = Response(jsonify(things[offset:offset+limit]), status=200, mimetype='application/json')
 		resp.headers['Link'] = ['<'+i[0]+'>; rel="'+i[1]+'"' for i in [first_page, last_page, next_page, prev_page]].join(',\n')
-		return 
+		return resp
 	else:
 		return jsonify(thing)
+
+def api_object_pager():
+	pass
 
 def build_analysis_to_json(build, prefix, normal_columns, big_columns):
 	returner = {'build_id': build.build_id,
