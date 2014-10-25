@@ -2,7 +2,7 @@ from ap import db, config
 
 from flask import Flask, request, render_template, jsonify, url_for, Response
 import urllib.parse
-# Maybe split front-end and api routes into different files? (not really sure how to do this)
+# Maybe split front-end and api routes+stuff into different files? (not really sure how to do this)
 app = Flask(__name__)
 s = db.make_session(db.stats_engine, scoped=True)
 
@@ -32,17 +32,19 @@ def api_pager(ids, route, offset=0, limit=20):
 			first_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'first']
 			last_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'last']
 			limit = thing_length
+
 		if offset+limit > thing_length:
 			return not_found() # bail since asking for range thats not existy, better error code..?
+
 		next_page = ['', 'next']
 		prev_page = ['', 'last']
-		#resp = Response(jsonify(things[offset:offset+limit]), status=200, mimetype='application/json')
-		page_links = ['<'+i[0]+'>; rel="'+i[1]+'"' for i in [first_page, last_page, next_page, prev_page]].join(',\n')
-		return ids[offset:offset+limit], page_links
+
+		paged_links = ['<'+i[0]+'>; rel="'+i[1]+'"' for i in [first_page, last_page, next_page, prev_page]].join(',\n')
+		return ids[offset:offset+limit], paged_links
 	else:
 		return ids, None
 
-def api_object_pager():
+def api_object_pager(object, offset=0, limit=20, links=False):
 	pass
 
 def api_build_analysis_to_json(build, prefix, normal_columns, big_columns):
@@ -59,7 +61,11 @@ def api_build_analysis_to_json(build, prefix, normal_columns, big_columns):
 		returner['analysis'][c] = build.__dict__[c]
 
 	for c in big_columns:
-		returner['analysis'][c] = {'url': config.url+prefix+'/'+c+'/'+build.build_id}
+		# check if expanded=true, if so show partially expanded big columns (still not full, useobject_pager defaults?!)
+		if request.args.get('expanded', None):
+			returner['analysis'][c] = {'url': config.url+prefix+'/'+c+'/'+build.build_id, 'object': api_object_pager(build.__dict__[c])}
+		else:
+			returner['analysis'][c] = {'url': config.url+prefix+'/'+c+'/'+build.build_id}
 
 	return returner
 
@@ -70,9 +76,7 @@ def api_analysis_table():
 # return all the top level resources
 @app.route('/api/v1/')
 def api_index():
-	resources = {'url': config.url+'/api/v1',
-		'resources': {}
-	}
+	resources = {'url': config.url+'/api/v1', 'resources': {}}
 	endpoints = [config.url+str(i) for i in app.url_map.iter_rules() if str(i).startswith('/api/v1/') and len(str(i).split('/')) == 4]
 	for e in endpoints:
 		if not e.split('/')[-1] == '':
@@ -87,16 +91,17 @@ def api_general(build_id):
 	objects = ['top_required_packages', 'named_ecosystems', 'home_page_domains']
 
 	# allow time series query here (mb decorator), if no query return most recent build
-	if not build_id:
-		general_analysis = [s.query(db.General_analysis).order_by('-id').first()]
-	elif request.args.get('timeseries', None) and not build_id:
+	# two args, timeseries for build_id to build_id, and lazy_timeseries from generating build_ids from timestamp to timestamp
+	if request.args.get('timeseries', None) and not build_id:
 		# pagination here?
 		offset = request.args.get('offset', 0)
 		limit = request.args.get('limit', 20)
-		# something here to generate series of id's from two dates...
+		# something here to generate list of ids from two dates... (also a way to handle how i have it now, comma-list of ids)
 		timeseries_ids = request.args.get('timeseries').split(',')
 		paged_ids, paged_links = api_pager(timeseries_ids, '/api/v1/general', offset, limit)
 		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in paged_ids]
+	elif not build_id:
+		general_analysis = [s.query(db.General_analysis).order_by('-id').first()]
 	elif build_id:
 		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==build_id).first()]
 	else:
@@ -108,10 +113,10 @@ def api_general(build_id):
 	else:
 		# impl sort here?
 		columns = [api_build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis]
-		resp = Response(jsonify(columns, status=200, mimetype='application/json'))
+		resp = jsonify(columns)
+		resp.status_code = 200
 		if paged_links: resp.headers['Link'] = paged_links
 		return resp
-
 
 @app.route('/api/v1/general/top_required_packages', defaults={'build_id': None})
 @app.route('/api/v1/general/top_required_packages/<int:build_id>')
