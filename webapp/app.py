@@ -1,7 +1,8 @@
 from ap import db, config
 
 from flask import Flask, request, render_template, jsonify, url_for, Response
-import urllib.parse
+import urllib.parse, dateutil.parser
+from datetime.datetime import strptime
 # Maybe split front-end and api routes+stuff into different files? (not really sure how to do this)
 app = Flask(__name__)
 s = db.make_session(db.stats_engine, scoped=True)
@@ -70,6 +71,7 @@ def api_build_analysis_to_json(build, prefix, normal_columns, big_columns):
 	return returner
 
 def api_analysis_table():
+	# populate from api_general prototype
 	pass
 
 # API routes
@@ -93,27 +95,47 @@ def api_general(build_id):
 	# allow time series query here (mb decorator), if no query return most recent build
 	# two args, timeseries for build_id to build_id, and lazy_timeseries from generating build_ids from timestamp to timestamp
 	if request.args.get('timeseries', None) and not build_id:
-		# pagination here?
+		# time series!
 		offset = request.args.get('offset', 0)
 		limit = request.args.get('limit', 20)
-		# something here to generate list of ids from two dates... (also a way to handle how i have it now, comma-list of ids)
-		timeseries_ids = request.args.get('timeseries').split(',')
-		paged_ids, paged_links = api_pager(timeseries_ids, '/api/v1/general', offset, limit)
+		timeseries_ids = request.args.get('timeseries').split('-')
+		if not len(timeseries_ids) == 2 and (timeseries_ids[0] < 0 or timeseries_ids[0] >= timeseries_ids[1]):
+			# bad timeseries!
+			return not_found() # definitely not right error code!
+		paged_ids, paged_links = api_pager(range(timeseries_ids[0], timeseries_ids[1]+1), '/api/v1/general', offset, limit)
+		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in paged_ids]
+	elif request.args.get('lazy_timeseries', None):
+		# lazy timeseries!
+		lazy_series = request.args.get('lazy_timeseries').split('-')
+		if not len(lazy_series) == 2 and (dateutil.parser.parse(lazy_series[0]) < 0 or dateutil.parser.parse(lazy_series[0]) >= lazdateutil.parser.parse(lazy_series[1])):
+			# bad lazy series!
+			return not_found() # definitely not right error code!
+		# timestamp format ISO 8601: 20130903T13:17:45Z
+		# prob wanna try/catch this for parsing errors
+		lazy_series = [dateutil.parser.parse(lazy_series[0]), dateutil.parser.parse(lazy_series[1])]
+		build_timestamps = s.query(db.Build.id, db.Build.build_timestamp).all()
+		low_time = min([b[1] for b in build_timestamps], key=lambda x:abs(x-lazy_series[0]))
+		low_id = [b[0] for b in build_timestamps if b[1] == low_time][0]
+		high_time = min([b[1] for b in build_timestamps], key=lambda x:abs(x-lazy_series[1]))
+		high_id = [b[0] for b in build_timestamps if b[1] == high_time][0]
+		paged_ids, paged_links = api_pager(range(low_id, high_id+1), '/api/v1/general', offset, limit)
 		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in paged_ids]
 	elif not build_id:
+		# no args at all! return most recent build
 		general_analysis = [s.query(db.General_analysis).order_by('-id').first()]
 	elif build_id:
+		# build id specified, return it
 		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==build_id).first()]
 	else:
+		# idk what happened...
 		return not_found()
 
 	if len(general_analysis) < 1:
-		# bad build_id, probably better error code?
+		# bad build_id or something, probably better error code?
 		return not_found()
 	else:
 		# impl sort here?
-		columns = [api_build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis]
-		resp = jsonify(columns)
+		resp = jsonify([api_build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis])
 		resp.status_code = 200
 		if paged_links: resp.headers['Link'] = paged_links
 		return resp
