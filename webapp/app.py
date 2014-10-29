@@ -27,30 +27,38 @@ def not_found(error=None):
 	resp.status_code = 404
 	return resp
 
-def api_pager(ids, route, offset=0, limit=20):
+def api_pager(ids, route=None, offset=0, limit=20, links=True):
 	if not 'X-Total-Count' in request.headers:
 		thing_length = len(ids)-1 # does this need to be -1?
-		if thing_length >= limit:
-			first_page = [config.url+route+'?offset=0&limit='+str(limit), 'first']
-			last_page = [config.url+route+'?offset='+str(thing_length-(thing_length%limit))+'&limit='+str(thing_length%limit), 'last']
+		if links and route:
+			if thing_length >= limit:
+				first_page = [config.url+route+'?offset=0&limit='+str(limit), 'first']
+				last_page = [config.url+route+'?offset='+str(thing_length-(thing_length%limit))+'&limit='+str(thing_length%limit), 'last']
+			else:
+				first_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'first']
+				last_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'last']
+				limit = thing_length
+
+			if offset+limit > thing_length:
+				return not_found() # bail since asking for range thats not existy, better error code..?
+
+			next_page = ['', 'next']
+			prev_page = ['', 'last']
+
+			paged_links = ['<'+i[0]+'>; rel="'+i[1]+'"' for i in [first_page, last_page, next_page, prev_page]].join(',\n')
+			return ids[offset:offset+limit], paged_links
 		else:
-			first_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'first']
-			last_page = [config.url+route+'?offset=0&limit='+str(thing_length), 'last']
-			limit = thing_length
-
-		if offset+limit > thing_length:
-			return not_found() # bail since asking for range thats not existy, better error code..?
-
-		next_page = ['', 'next']
-		prev_page = ['', 'last']
-
-		paged_links = ['<'+i[0]+'>; rel="'+i[1]+'"' for i in [first_page, last_page, next_page, prev_page]].join(',\n')
-		return ids[offset:offset+limit], paged_links
+			return ids[offset:offset+limit]
 	else:
 		return ids, None
 
-def api_object_pager(object, offset=0, limit=20, links=False):
-	pass
+def api_object_pager(thing, route=None, offset=0, limit=20, links=False):
+	# monkey-patch, this is not what this is meant for whoopsy lol
+	if links and route:
+		return api_pager(thing, route=route, offset=offset, limit=limit)
+	else:
+		return api_pager(thing, offset=offset, limit=limit, links=links)
+
 
 def api_build_analysis_to_json(build, prefix, normal_columns, big_columns):
 	returner = {'build_id': build.build_id,
