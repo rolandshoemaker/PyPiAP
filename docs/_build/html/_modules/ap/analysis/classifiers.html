@@ -1,0 +1,731 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ap.analysis.classifiers &mdash; .  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title=".  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">.  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ap.analysis.classifiers</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">ap</span> <span class="kn">import</span> <span class="n">db</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">func</span>
+
+<span class="n">all_classifiers</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;Development Status :: 1 - Planning&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Development Status :: 2 - Pre-Alpha&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Development Status :: 3 - Alpha&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Development Status :: 4 - Beta&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Development Status :: 5 - Production/Stable&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Development Status :: 6 - Mature&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Development Status :: 7 - Inactive&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Console&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Console :: Curses&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Console :: Framebuffer&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Console :: Newt&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Console :: svgalib&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Handhelds/PDA&#39;s&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: MacOS X&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: MacOS X :: Aqua&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: MacOS X :: Carbon&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: MacOS X :: Cocoa&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: No Input/Output (Daemon)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: OpenStack&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Other Environment&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Plugins&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Web Environment&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Web Environment :: Buffet&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Web Environment :: Mozilla&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Web Environment :: ToscaWidgets&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: Win32 (MS Windows)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: X11 Applications&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: X11 Applications :: Gnome&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: X11 Applications :: GTK&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: X11 Applications :: KDE&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Environment :: X11 Applications :: Qt&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: BFG&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Bob&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Bottle&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Buildout&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Buildout :: Extension&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Buildout :: Recipe&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Chandler&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: CherryPy&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: CubicWeb&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Django&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Flask&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: IDLE&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: IPython&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Opps&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Paste&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Plone&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Plone :: 3.2&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Plone :: 3.3&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Plone :: 4.0&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Plone :: 4.1&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Plone :: 4.2&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Plone :: 4.3&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Plone :: 5.0&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Pylons&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Pyramid&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Review Board&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Scrapy&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Setuptools Plugin&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Trac&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Tryton&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: TurboGears&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: TurboGears :: Applications&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: TurboGears :: Widgets&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Twisted&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: ZODB&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Zope2&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Framework :: Zope3&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Customer Service&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Developers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Education&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: End Users/Desktop&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Financial and Insurance Industry&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Healthcare Industry&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Information Technology&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Legal Industry&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Manufacturing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Other Audience&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Religion&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Science/Research&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: System Administrators&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Intended Audience :: Telecommunications Industry&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Aladdin Free Public License (AFPL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: DFSG approved&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Eiffel Forum License (EFL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Free For Educational Use&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Free For Home Use&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Free for non-commercial use&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Freely Distributable&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Free To Use But Restricted&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Freeware&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Netscape Public License (NPL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Nokia Open Source License (NOKOS)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Academic Free License (AFL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Apache Software License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Apple Public Source License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Artistic License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Attribution Assurance License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: BSD License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Common Public License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Eiffel Forum License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: European Union Public Licence 1.0 (EUPL 1.0)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: European Union Public Licence 1.1 (EUPL 1.1)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU Affero General Public License v3&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU Free Documentation License (FDL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU General Public License (GPL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU General Public License v2 (GPLv2)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU General Public License v3 (GPLv3)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: IBM Public License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Intel Open Source License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: ISC License (ISCL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Jabber Open Source License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: MIT License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: MITRE Collaborative Virtual Workspace License (CVW)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Motosoto License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Mozilla Public License 1.0 (MPL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Mozilla Public License 1.1 (MPL 1.1)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Nethack General Public License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Nokia Open Source License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Open Group Test Suite License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Python License (CNRI Python License)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Python Software Foundation License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Qt Public License (QPL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Ricoh Source Code Public License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Sleepycat License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Sun Industry Standards Source License (SISSL)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Sun Public License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: University of Illinois/NCSA Open Source License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Vovida Software License 1.0&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: W3C License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: X.Net License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: zlib/libpng License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: OSI Approved :: Zope Public License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Other/Proprietary License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Public Domain&quot;</span><span class="p">,</span>
+	<span class="s">&quot;License :: Repoze Public License&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Afrikaans&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Arabic&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Bengali&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Bosnian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Bulgarian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Catalan&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Chinese (Simplified)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Chinese (Traditional)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Croatian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Czech&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Danish&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Dutch&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: English&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Esperanto&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Finnish&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: French&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Galician&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: German&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Greek&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Hebrew&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Hindi&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Hungarian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Icelandic&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Indonesian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Italian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Japanese&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Javanese&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Korean&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Latin&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Latvian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Macedonian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Malay&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Marathi&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Norwegian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Panjabi&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Persian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Polish&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Portuguese&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Portuguese (Brazilian)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Romanian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Russian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Serbian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Slovak&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Slovenian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Spanish&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Swedish&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Tamil&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Telugu&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Thai&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Turkish&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Ukranian&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Urdu&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Natural Language :: Vietnamese&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Android&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: BeOS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: iOS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: MacOS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: MacOS :: MacOS 9&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: MacOS :: MacOS X&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: MS-DOS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows :: Windows 3.1 or Earlier&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows :: Windows 7&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows :: Windows 95/98/2000&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows :: Windows CE&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows :: Windows NT/2000&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows :: Windows Server 2003&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows :: Windows Server 2008&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows :: Windows Vista&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Microsoft :: Windows :: Windows XP&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: OS/2&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: OS Independent&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Other OS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: PalmOS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: PDA Systems&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: AIX&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: BSD&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: BSD :: BSD/OS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: BSD :: FreeBSD&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: BSD :: NetBSD&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: BSD :: OpenBSD&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: GNU Hurd&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: HP-UX&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: IRIX&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: Linux&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: Other&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: SCO&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: POSIX :: SunOS/Solaris&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Operating System :: Unix&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Ada&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: APL&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: ASP&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Assembly&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Awk&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Basic&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: C&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: C#&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: C++&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Cold Fusion&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Cython&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Delphi/Kylix&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Dylan&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Eiffel&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Emacs-Lisp&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Erlang&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Euler&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Euphoria&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Forth&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Fortran&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Haskell&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Java&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: JavaScript&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Lisp&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Logo&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: ML&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Modula&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Objective C&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Object Pascal&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: OCaml&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Other&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Other Scripting Engines&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Pascal&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Perl&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: PHP&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Pike&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Pliant&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: PL/SQL&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: PROGRESS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Prolog&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 2&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 2.3&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 2.4&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 2.5&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 2.6&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 2.7&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 2 :: Only&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 3&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 3.0&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 3.1&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 3.2&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 3.3&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: 3.4&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: Implementation&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: Implementation :: CPython&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: Implementation :: IronPython&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: Implementation :: Jython&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: Implementation :: PyPy&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Python :: Implementation :: Stackless&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: REBOL&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Rexx&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Ruby&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Scheme&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Simula&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Smalltalk&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: SQL&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Tcl&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Unix Shell&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Visual Basic&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: XBasic&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: YACC&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Programming Language :: Zope&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Adaptive Technologies&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Artistic Software&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: BBS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Chat&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Chat :: AOL Instant Messenger&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Chat :: ICQ&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Chat :: Internet Relay Chat&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Chat :: Unix Talk&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Conferencing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Email&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Email :: Address Book&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Email :: Email Clients (MUA)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Email :: Filters&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Email :: Mailing List Servers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Email :: Mail Transport Agents&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Email :: Post-Office&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Email :: Post-Office :: IMAP&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Email :: Post-Office :: POP3&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Fax&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: FIDO&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: File Sharing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: File Sharing :: Gnutella&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: File Sharing :: Napster&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Ham Radio&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Internet Phone&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Telephony&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Communications :: Usenet News&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Database&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Database :: Database Engines/Servers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Database :: Front-Ends&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: File Managers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Gnome&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: GNUstep&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: K Desktop Environment (KDE)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: K Desktop Environment (KDE) :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: PicoGUI&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: PicoGUI :: Applications&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: PicoGUI :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Screen Savers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Afterstep&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Afterstep :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Applets&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Blackbox&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Blackbox :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: CTWM&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: CTWM :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Enlightenment&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Enlightenment :: Epplets&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Enlightenment :: Themes DR15&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Enlightenment :: Themes DR16&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Enlightenment :: Themes DR17&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Fluxbox&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Fluxbox :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: FVWM&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: FVWM :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: IceWM&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: IceWM :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: MetaCity&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: MetaCity :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Oroborus&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Oroborus :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Sawfish&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Sawfish :: Themes 0.30&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Sawfish :: Themes pre-0.30&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Waimea&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Waimea :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Window Maker&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Window Maker :: Applets&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: Window Maker :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: XFCE&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Desktop Environment :: Window Managers :: XFCE :: Themes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Documentation&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Education&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Education :: Computer Aided Instruction (CAI)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Education :: Testing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Arcade&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Board Games&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: First Person Shooters&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Fortune Cookies&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Multi-User Dungeons (MUD)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Puzzle Games&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Real Time Strategy&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Role-Playing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Side-Scrolling/Arcade Games&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Simulation&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Games/Entertainment :: Turn Based Strategy&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Home Automation&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: File Transfer Protocol (FTP)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: Finger&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: Log Analysis&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: Name Service (DNS)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: Proxy Servers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WAP&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Browsers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Dynamic Content&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Message Boards&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Dynamic Content :: News/Diary&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Page Counters&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: HTTP Servers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Indexing/Search&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Session&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Site Management&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: Site Management :: Link Checking&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: WSGI&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: WSGI :: Application&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: WWW/HTTP :: WSGI :: Server&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Internet :: Z39.50&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: 3D Modeling&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: 3D Rendering&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Capture&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Capture :: Digital Camera&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Capture :: Scanners&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Capture :: Screen Capture&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Editors&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Editors :: Raster-Based&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Editors :: Vector-Based&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Graphics Conversion&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Presentation&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Graphics :: Viewers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: Analysis&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: Capture/Recording&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: CD Audio&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: CD Audio :: CD Playing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: CD Audio :: CD Ripping&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: CD Audio :: CD Writing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: Conversion&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: Editors&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: MIDI&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: Mixers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: Players&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: Players :: MP3&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: Sound Synthesis&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Sound/Audio :: Speech&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Video&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Video :: Capture&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Video :: Conversion&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Video :: Display&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Multimedia :: Video :: Non-Linear Editor&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business :: Financial&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business :: Financial :: Accounting&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business :: Financial :: Investment&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business :: Financial :: Point-Of-Sale&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business :: Financial :: Spreadsheet&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business :: Groupware&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business :: News/Diary&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business :: Office Suites&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Office/Business :: Scheduling&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Other/Nonlisted Topic&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Printing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Religion&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Artificial Intelligence&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Artificial Life&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Astronomy&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Atmospheric Science&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Bio-Informatics&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Chemistry&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: GIS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Human Machine Interfaces&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Image Recognition&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Information Analysis&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Mathematics&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Medical Science Apps.&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Physics&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Scientific/Engineering :: Visualization&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Security&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Security :: Cryptography&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Sociology&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Sociology :: Genealogy&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Sociology :: History&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Assemblers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Bug Tracking&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Build Tools&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Code Generators&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Compilers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Debuggers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Disassemblers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Documentation&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Embedded Systems&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Internationalization&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Interpreters&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries :: Application Frameworks&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries :: Java Libraries&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries :: Perl Modules&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries :: PHP Classes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries :: Pike Modules&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries :: pygame&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries :: Python Modules&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries :: Ruby Modules&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Libraries :: Tcl Extensions&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Localization&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Object Brokering&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Object Brokering :: CORBA&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Pre-processors&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Quality Assurance&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Testing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Testing :: Traffic Generation&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: User Interfaces&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Version Control&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Version Control :: CVS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Version Control :: RCS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Version Control :: SCCS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Software Development :: Widget Sets&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Archiving&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Archiving :: Backup&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Archiving :: Compression&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Archiving :: Mirroring&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Archiving :: Packaging&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Benchmark&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Boot&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Boot :: Init&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Clustering&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Console Fonts&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Distributed Computing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Emulators&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Filesystems&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Hardware&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Hardware :: Hardware Drivers&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Hardware :: Mainframes&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Hardware :: Symmetric Multi-processing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Installation/Setup&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Logging&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Monitoring&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Networking&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Networking :: Firewalls&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Networking :: Monitoring&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Networking :: Monitoring :: Hardware Watchdog&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Networking :: Time Synchronization&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Operating System&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Operating System Kernels&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Operating System Kernels :: BSD&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Operating System Kernels :: GNU Hurd&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Operating System Kernels :: Linux&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Power (UPS)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Recovery Tools&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Shells&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Software Distribution&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Systems Administration&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Systems Administration :: Authentication/Directory&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Systems Administration :: Authentication/Directory :: LDAP&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: Systems Administration :: Authentication/Directory :: NIS&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: System :: System Shells&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Terminals&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Terminals :: Serial&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Terminals :: Telnet&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Terminals :: Terminal Emulators/X Terminals&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Editors&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Editors :: Documentation&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Editors :: Emacs&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Editors :: Integrated Development Environments (IDE)&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Editors :: Text Processing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Editors :: Word Processors&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Filters&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Fonts&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: General&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Indexing&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Linguistic&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Markup&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Markup :: HTML&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Markup :: LaTeX&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Markup :: SGML&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Markup :: VRML&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Text Processing :: Markup :: XML&quot;</span><span class="p">,</span>
+	<span class="s">&quot;Topic :: Utilities&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="top_classifiers"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.classifiers.top_classifiers">[docs]</a><span class="k">def</span> <span class="nf">top_classifiers</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Returns a list of classifiers sorted by how many times they are used (by default limit is none.)&quot;&quot;&quot;</span>
+	<span class="n">classifiers</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Classifier</span><span class="o">.</span><span class="n">classifier</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Classifier</span><span class="o">.</span><span class="n">classifier</span><span class="p">))</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Classifier</span><span class="o">.</span><span class="n">classifier</span><span class="p">)</span><span class="o">.</span><span class="n">having</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Classifier</span><span class="o">.</span><span class="n">classifier</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+	<span class="n">classifiers</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">tup</span><span class="p">:</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">limit</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+		<span class="k">return</span> <span class="n">classifiers</span><span class="p">[:</span><span class="n">limit</span><span class="p">]</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="c"># this is a lot!</span>
+		<span class="k">return</span> <span class="n">classifiers</span>
+</div>
+<span class="k">def</span> <span class="nf">_classifier_counter</span><span class="p">(</span><span class="n">class_list</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+	<span class="n">sizes</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">class_list</span><span class="p">:</span>
+		<span class="n">sizes</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; :: &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Classifier</span><span class="o">.</span><span class="n">classifier</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Classifier</span><span class="o">.</span><span class="n">classifier</span><span class="o">==</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()])</span>
+	<span class="k">return</span> <span class="n">sizes</span>
+
+<div class="viewcode-block" id="framework_sizes_by_classifier"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.classifiers.framework_sizes_by_classifier">[docs]</a><span class="k">def</span> <span class="nf">framework_sizes_by_classifier</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return dict of Frameworks and their size based on how many packages use their framework classifier.&quot;&quot;&quot;</span>
+	<span class="n">frameworks</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">all_classifiers</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;Framework&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; :: &#39;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span>
+	<span class="n">results</span> <span class="o">=</span> <span class="n">_classifier_counter</span><span class="p">(</span><span class="n">frameworks</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+	<span class="n">results</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">tup</span><span class="p">:</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">results</span>
+</div>
+<div class="viewcode-block" id="nonpython_pkgs"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.classifiers.nonpython_pkgs">[docs]</a><span class="k">def</span> <span class="nf">nonpython_pkgs</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return a dict of non-python Language classifiers and how many times they are used.&quot;&quot;&quot;</span>
+	<span class="n">languages</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">all_classifiers</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;Programming Language&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; :: &#39;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; :: &#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;Python&#39;</span><span class="p">]</span>
+	<span class="n">results</span> <span class="o">=</span> <span class="n">_classifier_counter</span><span class="p">(</span><span class="n">languages</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+	<span class="n">results</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">tup</span><span class="p">:</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">results</span>
+</div>
+<div class="viewcode-block" id="natural_language_distribution"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.classifiers.natural_language_distribution">[docs]</a><span class="k">def</span> <span class="nf">natural_language_distribution</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return a dict distribution of Natural Language classifiers.&quot;&quot;&quot;</span>
+	<span class="n">natural_languages</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">all_classifiers</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;Natural Language&#39;</span><span class="p">)]</span>
+	<span class="n">results</span> <span class="o">=</span> <span class="n">_classifier_counter</span><span class="p">(</span><span class="n">natural_languages</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+	<span class="n">results</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">tup</span><span class="p">:</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">results</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">.  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, roland.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

@@ -9,7 +9,7 @@ from os import listdir, remove
 from sqlalchemy.orm import sessionmaker
 import datetime, logging
 
-from ap import db
+from ap import db, config
 
 logging.config.fileConfig(config.root_dir+'logging.conf')
 logger = logging.getLogger('Builder')

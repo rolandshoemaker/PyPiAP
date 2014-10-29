@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ap.utils.peeper &mdash; .  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title=".  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">.  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ap.utils.peeper</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">tarfile</span><span class="o">,</span> <span class="nn">ast</span><span class="o">,</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">isfile</span><span class="p">,</span> <span class="n">join</span>
+
+<div class="viewcode-block" id="search_setup"><a class="viewcode-back" href="../../../ap.utils.html#ap.utils.peeper.search_setup">[docs]</a><span class="k">def</span> <span class="nf">search_setup</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+		<span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39;#+.*</span><span class="se">\n</span><span class="s">*&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span> <span class="c"># kill python comments?</span>
+		<span class="n">install_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;install_requires\s?=\s?\[&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="o">+</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">install_match</span><span class="p">:</span>
+			<span class="n">startpos</span> <span class="o">=</span> <span class="n">endpos</span> <span class="o">=</span> <span class="n">install_match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+			<span class="k">if</span> <span class="n">text</span><span class="p">[</span><span class="n">startpos</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;]&#39;</span><span class="p">]:</span>
+				<span class="k">return</span> <span class="p">[]</span>
+			<span class="n">in_quotes</span> <span class="o">=</span> <span class="bp">False</span>
+			<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">text</span><span class="p">[</span><span class="n">endpos</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\&#39;</span><span class="s">&#39;</span><span class="p">]:</span>
+					<span class="n">in_quotes</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">in_quotes</span>
+				<span class="k">if</span> <span class="n">text</span><span class="p">[</span><span class="n">endpos</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;]&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">in_quotes</span><span class="p">:</span>
+					<span class="k">break</span>
+				<span class="n">endpos</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="k">if</span> <span class="n">endpos</span> <span class="o">&gt;</span> <span class="n">startpos</span> <span class="ow">and</span> <span class="p">[</span><span class="n">text</span><span class="p">[</span><span class="n">startpos</span><span class="p">],</span> <span class="n">text</span><span class="p">[</span><span class="n">endpos</span><span class="p">]]</span> <span class="ow">in</span> <span class="p">[[</span><span class="s">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s">&#39;&quot;&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;</span><span class="se">\&#39;</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\&#39;</span><span class="s">&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;</span><span class="se">\&#39;</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&#39;]&#39;</span><span class="p">]]:</span>
+				<span class="n">install_line</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39;\s+|</span><span class="se">\n</span><span class="s">|#&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">[</span><span class="n">startpos</span><span class="p">:</span><span class="n">endpos</span><span class="p">])</span>
+				<span class="k">return</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="s">&#39;[&#39;</span><span class="o">+</span><span class="n">install_line</span><span class="o">+</span><span class="s">&#39;]&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="k">print</span><span class="p">([</span><span class="n">text</span><span class="p">[</span><span class="n">startpos</span><span class="p">],</span> <span class="n">text</span><span class="p">[</span><span class="n">endpos</span><span class="p">]])</span>
+				<span class="k">return</span> <span class="p">[]</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="p">[]</span>
+	<span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span> <span class="c"># bailing since not sure how to handle atm</span>
+		<span class="k">return</span> <span class="p">[]</span>
+</div>
+<div class="viewcode-block" id="extract_requirements"><a class="viewcode-back" href="../../../ap.utils.html#ap.utils.peeper.extract_requirements">[docs]</a><span class="k">def</span> <span class="nf">extract_requirements</span><span class="p">(</span><span class="n">tarball</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Returns a list of requirements if requirements.txt exists in tarball.&quot;&quot;&quot;</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="n">tarball</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;zip&#39;</span> <span class="ow">and</span> <span class="n">isfile</span><span class="p">(</span><span class="n">tarball</span><span class="p">):</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">tar</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">tarball</span><span class="p">)</span>
+		<span class="k">except</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">ReadError</span><span class="p">:</span>
+			<span class="k">return</span> <span class="p">[]</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">r</span> <span class="o">=</span> <span class="n">tar</span><span class="o">.</span><span class="n">getmember</span><span class="p">(</span><span class="n">tar</span><span class="o">.</span><span class="n">getnames</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/requirements.txt&#39;</span><span class="p">)</span>
+			<span class="n">lines</span> <span class="o">=</span> <span class="n">tar</span><span class="o">.</span><span class="n">extractfile</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+			<span class="k">return</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span> <span class="ow">or</span> <span class="p">[]</span>
+		<span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+			<span class="c"># lets check setup.py then</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="n">rr</span> <span class="o">=</span> <span class="n">tar</span><span class="o">.</span><span class="n">getmember</span><span class="p">(</span><span class="n">tar</span><span class="o">.</span><span class="n">getnames</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/&#39;</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s">&#39;.egg-info/requires.txt&#39;</span><span class="p">)</span>
+				<span class="n">lines</span> <span class="o">=</span> <span class="n">tar</span><span class="o">.</span><span class="n">extractfile</span><span class="p">(</span><span class="n">rr</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+				<span class="k">return</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span> <span class="ow">or</span> <span class="p">[]</span>
+			<span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+				<span class="k">try</span><span class="p">:</span>			
+					<span class="n">s</span> <span class="o">=</span> <span class="n">tar</span><span class="o">.</span><span class="n">getmember</span><span class="p">(</span><span class="n">tar</span><span class="o">.</span><span class="n">getnames</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s">&#39;/setup.py&#39;</span><span class="p">)</span>
+					<span class="k">return</span> <span class="n">search_setup</span><span class="p">(</span><span class="n">tar</span><span class="o">.</span><span class="n">extractfile</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+				<span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+
+					<span class="k">return</span> <span class="p">[]</span>
+	<span class="k">elif</span> <span class="n">tarball</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;zip&#39;</span> <span class="ow">and</span> <span class="n">isfile</span><span class="p">(</span><span class="n">tarball</span><span class="p">):</span> <span class="c"># it&#39;s a zip file not a tarball!</span>
+		<span class="k">with</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">tarball</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">zip</span><span class="p">:</span>
+			<span class="n">folder</span> <span class="o">=</span> <span class="s">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tarball</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+			<span class="k">try</span><span class="p">:</span>
+				<span class="n">r</span> <span class="o">=</span> <span class="nb">zip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s">&#39;/requirements.txt&#39;</span><span class="p">)</span>
+				<span class="k">return</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">readlines</span><span class="p">()]</span> <span class="ow">or</span> <span class="p">[]</span>
+			<span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+				<span class="k">try</span><span class="p">:</span>
+					<span class="n">rr</span> <span class="o">=</span> <span class="nb">zip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s">&#39;/&#39;</span><span class="o">+</span><span class="n">name</span><span class="o">+</span><span class="s">&#39;.egg-info/requires.txt&#39;</span><span class="p">)</span>
+					<span class="k">return</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">rr</span><span class="o">.</span><span class="n">readlines</span><span class="p">()]</span> <span class="ow">or</span> <span class="p">[]</span>
+				<span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+					<span class="k">try</span><span class="p">:</span>
+						<span class="n">s</span> <span class="o">=</span> <span class="nb">zip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s">&#39;/setup.py&#39;</span><span class="p">)</span>
+						<span class="k">return</span> <span class="n">search_setup</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+					<span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+						<span class="k">return</span> <span class="p">[]</span>
+	<span class="k">return</span> <span class="p">[]</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+	<span class="kn">import</span> <span class="nn">argparse</span>
+	<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s">&#39;Peep inside a Python sdist tarball/zip and find its dirty requirements.&#39;</span><span class="p">)</span>
+	<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;file&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;File to peep into.&#39;</span><span class="p">)</span>
+	<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-n&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s">&#39;Optional name of package, peeper will guess if not supplied (needs to include version number if in tarball name.)&#39;</span><span class="p">)</span>
+	<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">n</span><span class="p">:</span>
+		<span class="n">guessed</span> <span class="o">=</span> <span class="bp">True</span>
+		<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.zip&#39;</span><span class="p">):</span>
+			<span class="n">args</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;.zip&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.tar&#39;</span><span class="p">):</span>
+			<span class="n">args</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;.tar&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">tarsearch</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;\.tar\.(.+)&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">tarsearch</span><span class="p">:</span>
+				<span class="n">args</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;.tar.&#39;</span><span class="o">+</span><span class="n">tarsearch</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">args</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+		<span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+			<span class="n">args</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">n</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">args</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+	<span class="k">print</span><span class="p">(</span><span class="s">&#39;[&#39;</span><span class="o">+</span><span class="n">args</span><span class="o">.</span><span class="n">n</span><span class="o">+</span><span class="s">&#39; requires]&#39;</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">extract_requirements</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">file</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+		<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">+</span><span class="n">r</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">.  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, roland.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

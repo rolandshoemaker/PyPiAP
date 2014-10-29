@@ -1,0 +1,465 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ap.db &mdash; .  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title=".  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">.  documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ap.db</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Column</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Boolean</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span> <span class="n">Interval</span><span class="p">,</span> <span class="n">TIMESTAMP</span><span class="p">,</span> <span class="n">PickleType</span><span class="p">,</span> <span class="n">LargeBinary</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">relationship</span><span class="p">,</span> <span class="n">backref</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">update</span><span class="p">,</span> <span class="n">func</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="n">sessionmaker</span><span class="p">,</span> <span class="n">scoped_session</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">strptime</span>
+
+<span class="kn">from</span> <span class="nn">ap</span> <span class="kn">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">ap.utils</span> <span class="kn">import</span> <span class="n">peeper</span>
+
+<span class="c"># JSON decomp tables</span>
+<span class="n">json_Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Package"><a class="viewcode-back" href="../../ap.html#ap.db.Package">[docs]</a><span class="k">class</span> <span class="nc">Package</span><span class="p">(</span><span class="n">json_Base</span><span class="p">):</span>
+	<span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;package&#39;</span>
+	<span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+	<span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+	<span class="n">download_url</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">home_page</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">description</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">license</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">summary</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">platform</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">downloads_month</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+	<span class="n">downloads_week</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+	<span class="n">downloads_day</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+	</div>
+<div class="viewcode-block" id="Release"><a class="viewcode-back" href="../../ap.html#ap.db.Release">[docs]</a><span class="k">class</span> <span class="nc">Release</span><span class="p">(</span><span class="n">json_Base</span><span class="p">):</span>
+	<span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;release&#39;</span>
+	<span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+	<span class="n">version</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">current</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">)</span> <span class="c"># Is this the current version of this package?</span>
+	<span class="n">is_url</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">)</span> <span class="c"># Does this release also exist in package[&#39;urls&#39;]?</span>
+	<span class="n">upload_time</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">)</span>
+	<span class="n">python_version</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">comment_text</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">has_sig</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">)</span>
+	<span class="n">filename</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">packagetype</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+	<span class="n">downloads</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+	<span class="n">package_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+	<span class="n">package</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Package</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;releases&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Classifier"><a class="viewcode-back" href="../../ap.html#ap.db.Classifier">[docs]</a><span class="k">class</span> <span class="nc">Classifier</span><span class="p">(</span><span class="n">json_Base</span><span class="p">):</span>
+	<span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;classifier&#39;</span>
+	<span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+	<span class="n">classifier</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">package_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+	<span class="n">package</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Package</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;classifiers&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Author"><a class="viewcode-back" href="../../ap.html#ap.db.Author">[docs]</a><span class="k">class</span> <span class="nc">Author</span><span class="p">(</span><span class="n">json_Base</span><span class="p">):</span>
+	<span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;author&#39;</span>
+	<span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+	<span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">email</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+	<span class="n">package_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+	<span class="n">package</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Package</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;author&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Requirement"><a class="viewcode-back" href="../../ap.html#ap.db.Requirement">[docs]</a><span class="k">class</span> <span class="nc">Requirement</span><span class="p">(</span><span class="n">json_Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;requirement&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">op</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">requirement_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Package</span><span class="p">)</span>
+    <span class="n">release_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Release</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="n">release</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Release</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;requirements&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+
+<span class="c"># Statistic collection tables</span></div>
+<span class="n">stats_Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Build"><a class="viewcode-back" href="../../ap.html#ap.db.Build">[docs]</a><span class="k">class</span> <span class="nc">Build</span><span class="p">(</span><span class="n">stats_Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;builds&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">build_timestamp</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">TIMESTAMP</span><span class="p">,</span> <span class="n">server_default</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="n">onupdate</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">current_timestamp</span><span class="p">())</span>
+    <span class="n">rebuild_duration</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Interval</span><span class="p">)</span>
+    <span class="n">analysis_duration</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Interval</span><span class="p">)</span>
+    <span class="n">index_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">real_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">phantom_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">json_size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">mirror_size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">database_size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">packages_inserted</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">packages_updated</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">packages_removed</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="General_analysis"><a class="viewcode-back" href="../../ap.html#ap.db.General_analysis">[docs]</a><span class="k">class</span> <span class="nc">General_analysis</span><span class="p">(</span><span class="n">stats_Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;general_analysis&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">build_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Build</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="n">build</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Build</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;general&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+    <span class="c"># General</span>
+    <span class="n">no_releases</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">no_url</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">total_downloads</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">total_current_downloads</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">downloads_last_day</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">downloads_last_week</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">downloads_last_month</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">top_required_packages</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+    <span class="n">named_ecosystems</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+    <span class="n">home_page_domains</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Author_analysis"><a class="viewcode-back" href="../../ap.html#ap.db.Author_analysis">[docs]</a><span class="k">class</span> <span class="nc">Author_analysis</span><span class="p">(</span><span class="n">stats_Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;author_analysis&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">build_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Build</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="n">build</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Build</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;authors&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+    <span class="c"># Authors</span>
+    <span class="n">top_authors</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+    <span class="n">unique_authors</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">multiple_authors</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">author_email_domains</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Classifier_analysis"><a class="viewcode-back" href="../../ap.html#ap.db.Classifier_analysis">[docs]</a><span class="k">class</span> <span class="nc">Classifier_analysis</span><span class="p">(</span><span class="n">stats_Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;classifier_analysis&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">build_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Build</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="n">build</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Build</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;classifiers&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+    <span class="c"># Classifiers</span>
+    <span class="n">top_classifiers</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+    <span class="n">framework_sizes_by_classifier</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+    <span class="n">nonpython_pkgs</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+    <span class="n">natural_language_distribution</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Release_analysis"><a class="viewcode-back" href="../../ap.html#ap.db.Release_analysis">[docs]</a><span class="k">class</span> <span class="nc">Release_analysis</span><span class="p">(</span><span class="n">stats_Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;release_analysis&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">build_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Build</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="n">build</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Build</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;releases&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+    <span class="c"># Releases</span>
+    <span class="n">total_releases</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">current_releases</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">average_download_per_release</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">major_version_distribution</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+    <span class="n">all_releases_size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">current_releases_size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">average_release_size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">average_release_interval</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Interval</span><span class="p">)</span>
+    <span class="n">average_release_age</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Interval</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Requirements_analysis"><a class="viewcode-back" href="../../ap.html#ap.db.Requirements_analysis">[docs]</a><span class="k">class</span> <span class="nc">Requirements_analysis</span><span class="p">(</span><span class="n">stats_Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;requirement_analysis&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">build_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Build</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="n">build</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Build</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;requirements&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+    <span class="c"># Requirements</span>
+    <span class="n">strong_weak_package_connections</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+    <span class="n">packages_with_selfloops</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">PickleType</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Graph_analysis"><a class="viewcode-back" href="../../ap.html#ap.db.Graph_analysis">[docs]</a><span class="k">class</span> <span class="nc">Graph_analysis</span><span class="p">(</span><span class="n">stats_Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;graph_analysis&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">build_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Build</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="n">build</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Build</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;graphs&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+    <span class="c"># Graphs</span>
+    <span class="n">package_requirement_graph</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">LargeBinary</span><span class="p">)</span>
+    <span class="n">package_author_graph</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">LargeBinary</span><span class="p">)</span>
+</div>
+<span class="n">json_engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="o">+</span><span class="s">&#39;pypi-json&#39;</span><span class="p">)</span>
+<span class="n">stats_engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="o">+</span><span class="s">&#39;pypi-stats&#39;</span><span class="p">)</span>
+<span class="n">json_Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">json_engine</span><span class="p">)</span>
+<span class="n">stats_Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">stats_engine</span><span class="p">)</span>
+
+<div class="viewcode-block" id="make_session"><a class="viewcode-back" href="../../ap.html#ap.db.make_session">[docs]</a><span class="k">def</span> <span class="nf">make_session</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">autoflush</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">scoped</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">scoped</span><span class="p">:</span>
+	    <span class="n">session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">()</span>
+	    <span class="n">session</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">autoflush</span><span class="o">=</span><span class="n">autoflush</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="n">autocommit</span><span class="p">,</span> <span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">scoped_session</span><span class="p">(</span><span class="n">sessionmaker</span><span class="p">())</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">autoflush</span><span class="o">=</span><span class="n">autoflush</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="n">autocommit</span><span class="p">,</span> <span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">session</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="insert_new"><a class="viewcode-back" href="../../ap.html#ap.db.insert_new">[docs]</a><span class="k">def</span> <span class="nf">insert_new</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add a new set of records based on json.&quot;&quot;&quot;</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">Package</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">],</span>
+        <span class="n">download_url</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;download_url&#39;</span><span class="p">],</span>
+        <span class="n">home_page</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;home_page&#39;</span><span class="p">],</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;description&#39;</span><span class="p">],</span>
+        <span class="n">license</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;license&#39;</span><span class="p">],</span>
+        <span class="n">summary</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;summary&#39;</span><span class="p">],</span>
+        <span class="n">platform</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;platform&#39;</span><span class="p">],</span>
+        <span class="n">downloads_month</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;downloads&#39;</span><span class="p">][</span><span class="s">&#39;last_month&#39;</span><span class="p">],</span>
+        <span class="n">downloads_week</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;downloads&#39;</span><span class="p">][</span><span class="s">&#39;last_week&#39;</span><span class="p">],</span>
+        <span class="n">downloads_day</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;downloads&#39;</span><span class="p">][</span><span class="s">&#39;last_day&#39;</span><span class="p">])</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">package</span><span class="p">)</span>
+    <span class="n">author</span> <span class="o">=</span> <span class="n">Author</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;author&#39;</span><span class="p">],</span>
+        <span class="n">email</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;author_email&#39;</span><span class="p">],</span>
+        <span class="n">package</span><span class="o">=</span><span class="n">package</span><span class="p">)</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">author</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;classifiers&#39;</span><span class="p">]:</span>
+        <span class="n">classifier</span> <span class="o">=</span> <span class="n">Classifier</span><span class="p">(</span><span class="n">classifier</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">package</span><span class="o">=</span><span class="n">package</span><span class="p">)</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">classifier</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">version</span><span class="p">,</span> <span class="n">pkgs</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pkgs</span><span class="p">):</span>
+            <span class="n">is_url</span> <span class="o">=</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;urls&#39;</span><span class="p">]</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">version</span> <span class="o">==</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;version&#39;</span><span class="p">]</span>
+            <span class="n">release</span> <span class="o">=</span> <span class="n">Release</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+                <span class="n">current</span><span class="o">=</span><span class="n">current</span><span class="p">,</span>
+                <span class="n">is_url</span><span class="o">=</span><span class="n">is_url</span><span class="p">,</span>
+                <span class="n">upload_time</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">strptime</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;upload_time&#39;</span><span class="p">],</span> <span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S&#39;</span><span class="p">)[:</span><span class="mi">6</span><span class="p">]),</span>
+                <span class="n">python_version</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;python_version&#39;</span><span class="p">],</span>
+                <span class="n">comment_text</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;comment_text&#39;</span><span class="p">],</span>
+                <span class="n">has_sig</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;has_sig&#39;</span><span class="p">],</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;filename&#39;</span><span class="p">],</span>
+                <span class="n">packagetype</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;packagetype&#39;</span><span class="p">],</span>
+                <span class="n">size</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;size&#39;</span><span class="p">],</span>
+                <span class="n">downloads</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;downloads&#39;</span><span class="p">],</span>
+                <span class="n">package</span><span class="o">=</span><span class="n">package</span><span class="p">)</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">release</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;[sql:insert] inserted records for &#39;</span><span class="o">+</span><span class="n">package</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="new_requirements"><a class="viewcode-back" href="../../ap.html#ap.db.new_requirements">[docs]</a><span class="k">def</span> <span class="nf">new_requirements</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Insert new set of requirement records for a package, should be done after full package index is built.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">version</span><span class="p">,</span> <span class="n">pkgs</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pkgs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;packagetype&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;sdist&#39;</span><span class="p">:</span> <span class="c"># and info[&#39;releases&#39;][version][i] in info[&#39;urls&#39;]:</span>
+                <span class="n">compressed_path</span> <span class="o">=</span> <span class="s">&#39;/pypi_mirror/web/&#39;</span> <span class="o">+</span> <span class="s">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;url&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="mi">3</span><span class="p">:])</span>
+                <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">peeper</span><span class="o">.</span><span class="n">extract_requirements</span><span class="p">(</span><span class="n">compressed_path</span><span class="p">,</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">req_info</span> <span class="o">=</span> <span class="n">req_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">req_info</span><span class="o">.</span><span class="n">project_name</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">req_pkg_name</span> <span class="o">=</span> <span class="n">req_info</span><span class="o">.</span><span class="n">project_name</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">req_info</span><span class="o">.</span><span class="n">specs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">req_op</span> <span class="o">=</span> <span class="n">req_info</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">req_version</span> <span class="o">=</span> <span class="n">req_info</span><span class="o">.</span><span class="n">specs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">req_op</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+                            <span class="n">req_version</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+                        <span class="n">req</span> <span class="o">=</span> <span class="n">Requirement</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">req_version</span><span class="p">,</span>
+                            <span class="n">op</span><span class="o">=</span><span class="n">req_op</span><span class="p">,</span>
+                            <span class="n">package</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Package</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">name</span><span class="o">==</span><span class="n">req_pkg_name</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">(),</span>
+                            <span class="n">release</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Release</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Release</span><span class="o">.</span><span class="n">filename</span><span class="o">==</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;url&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">first</span><span class="p">())</span>
+                        <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;[sql:insert] inserted requirements for &#39;</span><span class="o">+</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="update_requirements"><a class="viewcode-back" href="../../ap.html#ap.db.update_requirements">[docs]</a><span class="k">def</span> <span class="nf">update_requirements</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+	<span class="c"># since we are just nuking requirements lets just pass this through now</span>
+	<span class="n">new_requirements</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="update_old"><a class="viewcode-back" href="../../ap.html#ap.db.update_old">[docs]</a><span class="k">def</span> <span class="nf">update_old</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Package</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">name</span><span class="o">==</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;name&#39;</span><span class="p">]</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">download_url</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;download_url&#39;</span><span class="p">]</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">home_page</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;home_page&#39;</span><span class="p">]</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;description&#39;</span><span class="p">]</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;license&#39;</span><span class="p">]</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">summary</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;summary&#39;</span><span class="p">]</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">platform</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;platform&#39;</span><span class="p">]</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">downloads_month</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;downloads&#39;</span><span class="p">][</span><span class="s">&#39;last_month&#39;</span><span class="p">]</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">downloads_week</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;downloads&#39;</span><span class="p">][</span><span class="s">&#39;last_week&#39;</span><span class="p">]</span>
+    <span class="n">package</span><span class="o">.</span><span class="n">downloads_day</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;downloads&#39;</span><span class="p">][</span><span class="s">&#39;last_day&#39;</span><span class="p">]</span>
+
+    <span class="n">author</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Author</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">id</span><span class="o">==</span><span class="n">package</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="n">author</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;author&#39;</span><span class="p">]</span>
+    <span class="n">author</span><span class="o">.</span><span class="n">email</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;author_email&#39;</span><span class="p">]</span>
+    <span class="n">author</span><span class="o">.</span><span class="n">package</span><span class="o">=</span><span class="n">package</span>
+    
+    <span class="n">old_classifiers</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Classifier</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">id</span><span class="o">==</span><span class="n">package</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">old_classifiers</span><span class="p">:</span>
+    	<span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">classifier</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;classifiers&#39;</span><span class="p">]:</span>
+    		<span class="n">s</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    	<span class="k">else</span><span class="p">:</span>
+    		<span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;classifiers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;classifiers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">classifier</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;classifiers&#39;</span><span class="p">]:</span>
+        <span class="n">classifier</span> <span class="o">=</span> <span class="n">Classifier</span><span class="p">(</span><span class="n">classifier</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">package</span><span class="o">=</span><span class="n">package</span><span class="p">)</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">classifier</span><span class="p">)</span>
+
+    <span class="c"># just nuke and re introduce releases and requirements since idk the best way to do it now</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Release</span><span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">id</span><span class="o">==</span><span class="n">package</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+    	<span class="n">s</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="c"># *should* cascade to requirements? ._.</span>
+
+    <span class="k">for</span> <span class="n">version</span><span class="p">,</span> <span class="n">pkgs</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pkgs</span><span class="p">):</span>
+            <span class="n">is_url</span> <span class="o">=</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;urls&#39;</span><span class="p">]</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">version</span> <span class="o">==</span> <span class="n">info</span><span class="p">[</span><span class="s">&#39;info&#39;</span><span class="p">][</span><span class="s">&#39;version&#39;</span><span class="p">]</span>
+            <span class="n">release</span> <span class="o">=</span> <span class="n">Release</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+                <span class="n">current</span><span class="o">=</span><span class="n">current</span><span class="p">,</span>
+                <span class="n">is_url</span><span class="o">=</span><span class="n">is_url</span><span class="p">,</span>
+                <span class="n">upload_time</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">strptime</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;upload_time&#39;</span><span class="p">],</span> <span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S&#39;</span><span class="p">)[:</span><span class="mi">6</span><span class="p">]),</span>
+                <span class="n">python_version</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;python_version&#39;</span><span class="p">],</span>
+                <span class="n">comment_text</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;comment_text&#39;</span><span class="p">],</span>
+                <span class="n">has_sig</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;has_sig&#39;</span><span class="p">],</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;filename&#39;</span><span class="p">],</span>
+                <span class="n">packagetype</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;packagetype&#39;</span><span class="p">],</span>
+                <span class="n">size</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;size&#39;</span><span class="p">],</span>
+                <span class="n">downloads</span><span class="o">=</span><span class="n">info</span><span class="p">[</span><span class="s">&#39;releases&#39;</span><span class="p">][</span><span class="n">version</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s">&#39;downloads&#39;</span><span class="p">],</span>
+                <span class="n">package</span><span class="o">=</span><span class="n">package</span><span class="p">)</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">release</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;[sql:update] updated records for &#39;</span><span class="o">+</span><span class="n">package</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="remove_dead"><a class="viewcode-back" href="../../ap.html#ap.db.remove_dead">[docs]</a><span class="k">def</span> <span class="nf">remove_dead</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove records for a package that&#39;s disappeared.&quot;&quot;&quot;</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Package</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Package</span><span class="o">.</span><span class="n">name</span><span class="o">==</span><span class="n">pkg_name</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">package</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;[sql:drop] removed records for &#39;</span><span class="o">+</span><span class="n">pkg_name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="insert_build"><a class="viewcode-back" href="../../ap.html#ap.db.insert_build">[docs]</a><span class="k">def</span> <span class="nf">insert_build</span><span class="p">(</span><span class="n">resync_results</span><span class="p">,</span> <span class="n">analysis_results</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="n">build</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Build</span><span class="p">(</span><span class="n">rebuild_duration</span><span class="o">=</span><span class="n">resync_results</span><span class="p">[</span><span class="s">&#39;runtime&#39;</span><span class="p">],</span>
+        <span class="n">analysis_duration</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;runtime&#39;</span><span class="p">],</span>
+        <span class="n">index_count</span><span class="o">=</span><span class="n">resync_results</span><span class="p">[</span><span class="s">&#39;index_count&#39;</span><span class="p">],</span>
+        <span class="n">real_count</span><span class="o">=</span><span class="n">resync_results</span><span class="p">[</span><span class="s">&#39;real_count&#39;</span><span class="p">],</span>
+        <span class="n">phantom_count</span><span class="o">=</span><span class="n">resync_results</span><span class="p">[</span><span class="s">&#39;phantom_count&#39;</span><span class="p">],</span>
+        <span class="n">packages_inserted</span><span class="o">=</span><span class="n">resync_results</span><span class="p">[</span><span class="s">&#39;packages_inserted&#39;</span><span class="p">],</span>
+        <span class="n">packages_updated</span><span class="o">=</span><span class="n">resync_results</span><span class="p">[</span><span class="s">&#39;packages_updated&#39;</span><span class="p">],</span>
+        <span class="n">packages_removed</span><span class="o">=</span><span class="n">resync_results</span><span class="p">[</span><span class="s">&#39;packages_removed&#39;</span><span class="p">])</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">build</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;[sql:insert] inserted new build #&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">build</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+    <span class="c"># General</span>
+    <span class="n">general_analaysis</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">General_nalysis</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="n">build</span><span class="p">,</span>
+        <span class="n">no_releases</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;no_releases&#39;</span><span class="p">],</span>
+        <span class="n">no_url</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;no_url&#39;</span><span class="p">],</span>
+        <span class="n">total_downloads</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;total_downloads&#39;</span><span class="p">],</span>
+        <span class="n">total_current_downloads</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;total_current_downloads&#39;</span><span class="p">],</span>
+        <span class="n">downloads_last_day</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;downloads_last_day&#39;</span><span class="p">],</span>
+        <span class="n">downloads_last_week</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;downloads_last_week&#39;</span><span class="p">],</span>
+        <span class="n">downloads_last_month</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;downloads_last_month&#39;</span><span class="p">],</span>
+        <span class="n">top_required_packages</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;top_required_packages&#39;</span><span class="p">],</span>
+        <span class="n">named_ecosystems</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;named_ecosystems&#39;</span><span class="p">],</span>
+        <span class="n">home_page_domains</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;home_page_domains&#39;</span><span class="p">])</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">general_analysis</span><span class="p">)</span>
+    <span class="c"># Authors</span>
+    <span class="n">author_analaysis</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Author_Analysis</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="n">build</span><span class="p">,</span>
+        <span class="n">top_authors</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;top_authors&#39;</span><span class="p">],</span>
+        <span class="n">unique_authors</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;unique_authors&#39;</span><span class="p">],</span>
+        <span class="n">multiple_authors</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;multiple_authors&#39;</span><span class="p">],</span>
+        <span class="n">author_email_domains</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;author_email_domains&#39;</span><span class="p">])</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">author_analysis</span><span class="p">)</span>
+    <span class="c"># Classifiers</span>
+    <span class="n">classifier_analaysis</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Classifier_analysis</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="n">build</span><span class="p">,</span>
+        <span class="n">top_classifiers</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;top_classifiers&#39;</span><span class="p">],</span>
+        <span class="n">framework_sizes_by_classifier</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;framework_sizes_by_classifier&#39;</span><span class="p">],</span>
+        <span class="n">nonpython_pkgs</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;nonpython_pkgs&#39;</span><span class="p">],</span>
+        <span class="n">natural_language_distribution</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;natural_language_distribution&#39;</span><span class="p">])</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">classifier_analysis</span><span class="p">)</span>
+    <span class="c"># Releases</span>
+    <span class="n">release_analaysis</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Release_Analysis</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="n">build</span><span class="p">,</span>
+        <span class="n">total_releases</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;total_releases&#39;</span><span class="p">],</span>
+        <span class="n">current_releases</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;current_releases&#39;</span><span class="p">],</span>
+        <span class="n">average_download_per_release</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;average_download_per_release&#39;</span><span class="p">],</span>
+        <span class="n">major_version_distribution</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;major_version_distribution&#39;</span><span class="p">],</span>
+        <span class="n">all_releases_size</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;all_releases_size&#39;</span><span class="p">],</span>
+        <span class="n">current_releases_size</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;current_releases_size&#39;</span><span class="p">],</span>
+        <span class="n">average_release_size</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;average_release_size&#39;</span><span class="p">],</span>
+        <span class="n">average_release_interval</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;average_release_interval&#39;</span><span class="p">],</span>
+        <span class="n">average_release_age</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;average_release_age&#39;</span><span class="p">])</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">release_analysis</span><span class="p">)</span>
+    <span class="c"># Requirements</span>
+    <span class="n">requirement_analaysis</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Requirement_nalysis</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="n">build</span><span class="p">,</span>
+        <span class="n">strong_weak_package_connections</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;strong_weak_package_connections&#39;</span><span class="p">],</span>
+        <span class="n">packages_with_selfloops</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;packages_with_selfloops&#39;</span><span class="p">])</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">requirement_analysis</span><span class="p">)</span>
+    <span class="c"># Graphs</span>
+    <span class="n">graph_analaysis</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Graph_analysis</span><span class="p">(</span><span class="n">build</span><span class="o">=</span><span class="n">build</span><span class="p">,</span>
+        <span class="n">package_requirement_graph</span><span class="o">=</span><span class="n">analysis_results</span><span class="p">[</span><span class="s">&#39;package_requirement_graph&#39;</span><span class="p">],</span>
+        <span class="n">package_author_graph</span><span class="o">=</span><span class="n">analysis</span><span class="p">[</span><span class="s">&#39;package_author_graph&#39;</span><span class="p">])</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">graph_analysis</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;[sql:insert] inserted analysis tables for build #&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">build</span><span class="o">.</span><span class="n">id</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">.  documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, roland.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

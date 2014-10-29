@@ -1,0 +1,404 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ap.analysis package &mdash; .  documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title=".  documentation" href="index.html" />
+    <link rel="next" title="ap.utils package" href="ap.utils.html" />
+    <link rel="prev" title="ap-master module" href="ap-master.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="ap.utils.html" title="ap.utils package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ap-master.html" title="ap-master module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">.  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ap-analysis-package">
+<h1>ap.analysis package<a class="headerlink" href="#ap-analysis-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ap.analysis.authors">
+<span id="ap-analysis-authors-module"></span><h2>ap.analysis.authors module<a class="headerlink" href="#module-ap.analysis.authors" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ap.analysis.authors.author_email_domains">
+<tt class="descclassname">ap.analysis.authors.</tt><tt class="descname">author_email_domains</tt><big>(</big><em>s</em>, <em>cutoff=2</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/authors.html#author_email_domains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.authors.author_email_domains" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.authors.email_tld">
+<tt class="descclassname">ap.analysis.authors.</tt><tt class="descname">email_tld</tt><big>(</big><em>tld</em>, <em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/authors.html#email_tld"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.authors.email_tld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of emails using &#8216;.tld&#8217;.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.authors.multiple_authors">
+<tt class="descclassname">ap.analysis.authors.</tt><tt class="descname">multiple_authors</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/authors.html#multiple_authors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.authors.multiple_authors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of packages that (seem to) have multiple authors.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.authors.top_authors">
+<tt class="descclassname">ap.analysis.authors.</tt><tt class="descname">top_authors</tt><big>(</big><em>s</em>, <em>limit=0</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/authors.html#top_authors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.authors.top_authors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of authors sorted by how many packages they have contributed to the index (by default limit is none.)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.authors.unique_authors">
+<tt class="descclassname">ap.analysis.authors.</tt><tt class="descname">unique_authors</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/authors.html#unique_authors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.authors.unique_authors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of authors who have only released one package.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ap.analysis.classifiers">
+<span id="ap-analysis-classifiers-module"></span><h2>ap.analysis.classifiers module<a class="headerlink" href="#module-ap.analysis.classifiers" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ap.analysis.classifiers.framework_sizes_by_classifier">
+<tt class="descclassname">ap.analysis.classifiers.</tt><tt class="descname">framework_sizes_by_classifier</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/classifiers.html#framework_sizes_by_classifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.classifiers.framework_sizes_by_classifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dict of Frameworks and their size based on how many packages use their framework classifier.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.classifiers.natural_language_distribution">
+<tt class="descclassname">ap.analysis.classifiers.</tt><tt class="descname">natural_language_distribution</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/classifiers.html#natural_language_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.classifiers.natural_language_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dict distribution of Natural Language classifiers.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.classifiers.nonpython_pkgs">
+<tt class="descclassname">ap.analysis.classifiers.</tt><tt class="descname">nonpython_pkgs</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/classifiers.html#nonpython_pkgs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.classifiers.nonpython_pkgs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dict of non-python Language classifiers and how many times they are used.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.classifiers.top_classifiers">
+<tt class="descclassname">ap.analysis.classifiers.</tt><tt class="descname">top_classifiers</tt><big>(</big><em>s</em>, <em>limit=0</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/classifiers.html#top_classifiers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.classifiers.top_classifiers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of classifiers sorted by how many times they are used (by default limit is none.)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ap.analysis.common">
+<span id="ap-analysis-common-module"></span><h2>ap.analysis.common module<a class="headerlink" href="#module-ap.analysis.common" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ap.analysis.common.create_graph">
+<tt class="descclassname">ap.analysis.common.</tt><tt class="descname">create_graph</tt><big>(</big><em>nodelist</em>, <em>edgelist</em>, <em>directed=True</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/common.html#create_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.common.create_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build and reutrn a NetworkX graph.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.common.get_author_edgelist">
+<tt class="descclassname">ap.analysis.common.</tt><tt class="descname">get_author_edgelist</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/common.html#get_author_edgelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.common.get_author_edgelist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return edge list for Author-&gt;Package graph.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.common.get_author_nodelist">
+<tt class="descclassname">ap.analysis.common.</tt><tt class="descname">get_author_nodelist</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/common.html#get_author_nodelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.common.get_author_nodelist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return node list for Author-&gt;Package graph.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.common.get_pkg_edgelist">
+<tt class="descclassname">ap.analysis.common.</tt><tt class="descname">get_pkg_edgelist</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/common.html#get_pkg_edgelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.common.get_pkg_edgelist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return edge list for current Package requirement graph.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.common.get_pkg_nodelist">
+<tt class="descclassname">ap.analysis.common.</tt><tt class="descname">get_pkg_nodelist</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/common.html#get_pkg_nodelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.common.get_pkg_nodelist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return node list for current Package requirement graph.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.common.graph_to_gexf">
+<tt class="descclassname">ap.analysis.common.</tt><tt class="descname">graph_to_gexf</tt><big>(</big><em>g</em>, <em>path</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/common.html#graph_to_gexf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.common.graph_to_gexf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a NetworkX graph to a GEXF format file.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.common.graph_to_pickle">
+<tt class="descclassname">ap.analysis.common.</tt><tt class="descname">graph_to_pickle</tt><big>(</big><em>g</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/common.html#graph_to_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.common.graph_to_pickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a NetworkX graph as a binary Python Pickle.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.common.pickle_to_graph">
+<tt class="descclassname">ap.analysis.common.</tt><tt class="descname">pickle_to_graph</tt><big>(</big><em>pickle</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/common.html#pickle_to_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.common.pickle_to_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a NetworkX graph from a Pickle.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.common.tuplelist_to_csv">
+<tt class="descclassname">ap.analysis.common.</tt><tt class="descname">tuplelist_to_csv</tt><big>(</big><em>edgelist</em>, <em>filename</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/common.html#tuplelist_to_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.common.tuplelist_to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write list(/list of tuples) to CSV for import into something like Gephi.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ap.analysis.general">
+<span id="ap-analysis-general-module"></span><h2>ap.analysis.general module<a class="headerlink" href="#module-ap.analysis.general" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ap.analysis.general.downloads">
+<tt class="descclassname">ap.analysis.general.</tt><tt class="descname">downloads</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/general.html#downloads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.general.downloads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dict containing download statistics for the index.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.general.downloads_vs_indegree">
+<tt class="descclassname">ap.analysis.general.</tt><tt class="descname">downloads_vs_indegree</tt><big>(</big><em>s</em>, <em>filename</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/general.html#downloads_vs_indegree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.general.downloads_vs_indegree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create chart of the number of downloads per package vs. the number of times it is required, and return this data as a dict.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.general.find_named_ecosystems">
+<tt class="descclassname">ap.analysis.general.</tt><tt class="descname">find_named_ecosystems</tt><big>(</big><em>s</em>, <em>cutoff=5</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/general.html#find_named_ecosystems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.general.find_named_ecosystems" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return dict of named ecosystems and their sizes (split by . and - seperators.)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.general.home_page_domains">
+<tt class="descclassname">ap.analysis.general.</tt><tt class="descname">home_page_domains</tt><big>(</big><em>s</em>, <em>cutoff=5</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/general.html#home_page_domains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.general.home_page_domains" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.general.no_releases">
+<tt class="descclassname">ap.analysis.general.</tt><tt class="descname">no_releases</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/general.html#no_releases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.general.no_releases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return total number of packages that have no release.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.general.no_urls">
+<tt class="descclassname">ap.analysis.general.</tt><tt class="descname">no_urls</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/general.html#no_urls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.general.no_urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return total number of packages that have no urls.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.general.pkg_num">
+<tt class="descclassname">ap.analysis.general.</tt><tt class="descname">pkg_num</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/general.html#pkg_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.general.pkg_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return total number of packages that actually exist on the index.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.general.top_required_packages">
+<tt class="descclassname">ap.analysis.general.</tt><tt class="descname">top_required_packages</tt><big>(</big><em>s</em>, <em>top=None</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/general.html#top_required_packages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.general.top_required_packages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of top required packages and the number of times they are required.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ap.analysis.releases">
+<span id="ap-analysis-releases-module"></span><h2>ap.analysis.releases module<a class="headerlink" href="#module-ap.analysis.releases" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ap.analysis.releases.avg_downloads">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">avg_downloads</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#avg_downloads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.avg_downloads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return average number of downloads.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.releases.avg_release_age">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">avg_release_age</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#avg_release_age"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.avg_release_age" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return average age of current releases as a datetime.timedelta object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.releases.avg_release_interval">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">avg_release_interval</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#avg_release_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.avg_release_interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the average interval between releases.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.releases.avg_size">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">avg_size</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#avg_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.avg_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return average size of releases in bytes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.releases.current_num">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">current_num</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#current_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.current_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of current releases.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.releases.current_size">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">current_size</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#current_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.current_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return sum of all current release sizes in bytes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.releases.major_version_distribution">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">major_version_distribution</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#major_version_distribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.major_version_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dict of how many current releases have a major version in [0-9].</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.releases.minmax_size">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">minmax_size</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#minmax_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.minmax_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the minimum and maximum release size in bytes as a tuple.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.releases.num">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">num</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return total number of releases.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.releases.total_size">
+<tt class="descclassname">ap.analysis.releases.</tt><tt class="descname">total_size</tt><big>(</big><em>s</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/releases.html#total_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.releases.total_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return sum of all release sizes in bytes.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ap.analysis.requirements">
+<span id="ap-analysis-requirements-module"></span><h2>ap.analysis.requirements module<a class="headerlink" href="#module-ap.analysis.requirements" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ap.analysis.requirements.package_degree_distribution_chart">
+<tt class="descclassname">ap.analysis.requirements.</tt><tt class="descname">package_degree_distribution_chart</tt><big>(</big><em>s</em>, <em>filename</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/requirements.html#package_degree_distribution_chart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.requirements.package_degree_distribution_chart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a degree distribution chart.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.requirements.package_in_degree_distribution_chart">
+<tt class="descclassname">ap.analysis.requirements.</tt><tt class="descname">package_in_degree_distribution_chart</tt><big>(</big><em>s</em>, <em>filename</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/requirements.html#package_in_degree_distribution_chart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.requirements.package_in_degree_distribution_chart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a in degree distribution chart.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.requirements.package_out_degree_distribution_chart">
+<tt class="descclassname">ap.analysis.requirements.</tt><tt class="descname">package_out_degree_distribution_chart</tt><big>(</big><em>s</em>, <em>filename</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/requirements.html#package_out_degree_distribution_chart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.requirements.package_out_degree_distribution_chart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a in degree distribution chart.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.requirements.packages_with_selfloops">
+<tt class="descclassname">ap.analysis.requirements.</tt><tt class="descname">packages_with_selfloops</tt><big>(</big><em>s</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/requirements.html#packages_with_selfloops"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.requirements.packages_with_selfloops" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of Packages which require themselves.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ap.analysis.requirements.strong_weak_package_connections">
+<tt class="descclassname">ap.analysis.requirements.</tt><tt class="descname">strong_weak_package_connections</tt><big>(</big><em>s</em>, <em>g=None</em><big>)</big><a class="reference internal" href="_modules/ap/analysis/requirements.html#strong_weak_package_connections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ap.analysis.requirements.strong_weak_package_connections" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-ap.analysis">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ap.analysis" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ap.analysis package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ap.analysis.authors">ap.analysis.authors module</a></li>
+<li><a class="reference internal" href="#module-ap.analysis.classifiers">ap.analysis.classifiers module</a></li>
+<li><a class="reference internal" href="#module-ap.analysis.common">ap.analysis.common module</a></li>
+<li><a class="reference internal" href="#module-ap.analysis.general">ap.analysis.general module</a></li>
+<li><a class="reference internal" href="#module-ap.analysis.releases">ap.analysis.releases module</a></li>
+<li><a class="reference internal" href="#module-ap.analysis.requirements">ap.analysis.requirements module</a></li>
+<li><a class="reference internal" href="#module-ap.analysis">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ap-master.html"
+                        title="previous chapter">ap-master module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ap.utils.html"
+                        title="next chapter">ap.utils package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ap.analysis.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="ap.utils.html" title="ap.utils package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ap-master.html" title="ap-master module"
+             >previous</a> |</li>
+        <li><a href="index.html">.  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, roland.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

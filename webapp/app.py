@@ -27,7 +27,7 @@ def not_found(error=None):
 	resp.status_code = 404
 	return resp
 
-@app.errorhandler(400):
+@app.errorhandler(400)
 def bad_request(error=None):
 	message = {
 		'status': 400,
@@ -162,8 +162,9 @@ def api_general(build_id):
 		if request.args.get('sort', None):
 			sorters = request.args.get('sort')
 			for sorter in reversed(sorters):
-				reverse = True
+				reverse = True # default to descending list
 				if sorter.startswith('+'):
+					# oh you want aescending... fine
 					reverse = False
 				try:
 					stuff.sort(key=lambda x:x.analysis.__dict__[sorter], reverse=reverse)

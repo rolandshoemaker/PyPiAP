@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ap.analysis.releases &mdash; .  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title=".  documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">.  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for ap.analysis.releases</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">ap</span> <span class="kn">import</span> <span class="n">db</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">func</span>
+<span class="kn">import</span> <span class="nn">datetime</span><span class="o">,</span> <span class="nn">numpy</span>
+
+<div class="viewcode-block" id="num"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.num">[docs]</a><span class="k">def</span> <span class="nf">num</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return total number of releases.&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="current_num"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.current_num">[docs]</a><span class="k">def</span> <span class="nf">current_num</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return number of current releases.&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">current</span><span class="o">==</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="avg_downloads"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.avg_downloads">[docs]</a><span class="k">def</span> <span class="nf">avg_downloads</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return average number of downloads.&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">downloads</span><span class="p">))</span><span class="o">.</span><span class="n">scalar</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="major_version_distribution"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.major_version_distribution">[docs]</a><span class="k">def</span> <span class="nf">major_version_distribution</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return a dict of how many current releases have a major version in [0-9].&quot;&quot;&quot;</span>
+	<span class="n">nums</span> <span class="o">=</span> <span class="p">{}</span>
+	<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+		<span class="n">nums</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">current</span><span class="o">==</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)))</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">nums</span>
+</div>
+<div class="viewcode-block" id="total_size"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.total_size">[docs]</a><span class="k">def</span> <span class="nf">total_size</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return sum of all release sizes in bytes.&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">size</span><span class="p">))</span><span class="o">.</span><span class="n">scalar</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="current_size"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.current_size">[docs]</a><span class="k">def</span> <span class="nf">current_size</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return sum of all current release sizes in bytes.&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">size</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">current</span><span class="o">==</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">scalar</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="avg_size"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.avg_size">[docs]</a><span class="k">def</span> <span class="nf">avg_size</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return average size of releases in bytes.&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">size</span><span class="p">))</span><span class="o">.</span><span class="n">scalar</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="minmax_size"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.minmax_size">[docs]</a><span class="k">def</span> <span class="nf">minmax_size</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return the minimum and maximum release size in bytes as a tuple.&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">size</span><span class="p">))</span><span class="o">.</span><span class="n">scalar</span><span class="p">(),</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">size</span><span class="p">))</span><span class="o">.</span><span class="n">scalar</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="avg_release_interval"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.avg_release_interval">[docs]</a><span class="k">def</span> <span class="nf">avg_release_interval</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return the average interval between releases.&quot;&quot;&quot;</span>
+	<span class="c"># Note this takes forever to run, probably could find a better way?</span>
+	<span class="c"># oct 11 - this could be somewhat faster?</span>
+	<span class="n">pkgs</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Package</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Package</span><span class="o">.</span><span class="n">releases</span><span class="o">.</span><span class="n">any</span><span class="p">())</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+	<span class="n">time_dlts</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pkgs</span><span class="p">:</span>
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">releases</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="n">p</span><span class="o">.</span><span class="n">releases</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">tup</span><span class="p">:</span> <span class="n">tup</span><span class="o">.</span><span class="n">upload_time</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+			<span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">releases</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">upload_time</span><span class="o">-</span><span class="n">p</span><span class="o">.</span><span class="n">releases</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upload_time</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">releases</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">)]</span>
+			<span class="n">time_dlts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">times</span><span class="p">))</span>
+	<span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">time_dlts</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="avg_release_age"><a class="viewcode-back" href="../../../ap.analysis.html#ap.analysis.releases.avg_release_age">[docs]</a><span class="k">def</span> <span class="nf">avg_release_age</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;Return average age of current releases as a datetime.timedelta object.&quot;&quot;&quot;</span>
+	<span class="c"># should remove outliers and all that silly stuff</span>
+	<span class="n">releases</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">upload_time</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Release</span><span class="o">.</span><span class="n">current</span><span class="o">==</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span>
+	<span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">releases</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">.  documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, roland.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

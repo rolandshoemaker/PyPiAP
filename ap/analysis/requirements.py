@@ -52,7 +52,7 @@ def package_degree_distribution_chart(s, filename, g=None):
 def package_in_degree_distribution_chart(s, filename, g=None):
 	"""Create a in degree distribution chart."""
 	if not g:
-		g = create_graph(get_pkg_nodelist(s), get_pkg_edgelist(s))(s))
+		g = create_graph(get_pkg_nodelist(s), get_pkg_edgelist(s))
 	deg_seq = sorted(g.in_degree().values(), reverse=True)
 	plt.hist(deg_seq, bins=range(0, 20, 1), normed=True)
 	plt.xticks(range(0, 20, 1))

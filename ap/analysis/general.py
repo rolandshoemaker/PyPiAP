@@ -20,7 +20,7 @@ def no_releases(s):
 
 def no_urls(s):
 	"""Return total number of packages that have no urls."""
-	retrun s.query(db.Packages.home_page).filter(db.Packages.home_page.in_(['UNKNOWN', None, '', 'None', 'none'])).count()
+	return s.query(db.Packages.home_page).filter(db.Package.home_page.in_(['UNKNOWN', None, '', 'None', 'none'])).count()
 
 def downloads(s):
 	"""Return dict containing download statistics for the index."""
