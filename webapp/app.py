@@ -31,9 +31,10 @@ def not_found(error=None):
 def bad_request(error=None):
 	message = {
 		'status': 400,
-		'message': 'Bad Request',
-		'args': request.args
+		'message': 'Bad Request'
 	}
+	if error:
+		message['message'] += ': '+error
 	resp = jsonify(message)
 	resp.status_code = 400
 	return resp
@@ -51,7 +52,7 @@ def api_pager(ids, route=None, offset=0, limit=20, links=True):
 				limit = thing_length
 
 			if offset+limit > thing_length:
-				return bad_request() # bail since asking for range thats not existy, better error code..?
+				return bad_request('offset + limit is more than the resource length') # bail since asking for range thats not existy, better error code..?
 
 			next_page = ['', 'next']
 			prev_page = ['', 'last']
@@ -123,7 +124,7 @@ def api_general(build_id):
 		timeseries_ids = request.args.get('timeseries').split('-')
 		if not len(timeseries_ids) == 2 and (timeseries_ids[0] < 0 or timeseries_ids[0] >= timeseries_ids[1]):
 			# bad timeseries!
-			return bad_request() # definitely not right error code!
+			return bad_request('Invalid timeseries')
 		paged_ids, paged_links = api_pager(range(timeseries_ids[0], timeseries_ids[1]+1), '/api/v1/general', offset, limit)
 		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in paged_ids]
 	elif request.args.get('lazy_timeseries', None):
@@ -132,7 +133,7 @@ def api_general(build_id):
 		# prob wanna try/catch this for parsing errors
 		if not len(lazy_series) == 2 and (dateutil.parser.parse(lazy_series[0]) < 0 or dateutil.parser.parse(lazy_series[0]) >= lazdateutil.parser.parse(lazy_series[1])):
 			# bad lazy series!
-			return bad_request() # definitely not right error code!
+			return bad_request('Invalid lazy_timeseries') # definitely not right error code!
 		# timestamp format ISO 8601: 20130903T13:17:45Z
 		lazy_series = [dateutil.parser.parse(lazy_series[0]), dateutil.parser.parse(lazy_series[1])]
 		build_timestamps = s.query(db.Build.id, db.Build.build_timestamp).all()
@@ -149,14 +150,14 @@ def api_general(build_id):
 		# build id specified, return it
 		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==build_id).first()]
 		if len(general_analysis) == 0:
-			return bad_request()
+			return bad_request('Invalid build_id')
 	else:
 		# idk what happened...
 		return not_found()
 
 	if len(general_analysis) < 1:
 		# bad build_id or something, probably better error code?
-		return bad_request()
+		return not_found()
 	else:
 		stuff = [api_build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis]
 		if request.args.get('sort', None):
@@ -169,8 +170,8 @@ def api_general(build_id):
 				try:
 					stuff.sort(key=lambda x:x.analysis.__dict__[sorter], reverse=reverse)
 				except KeyError:
-					# bad query! what error code?
-					return bad_request()
+					# bad query!
+					return bad_request(sorter+' is a invalid sort key')
 		resp = jsonify(stuff)
 		resp.status_code = 200
 		if paged_links: resp.headers['Link'] = paged_links

@@ -160,6 +160,15 @@ class Graph_analysis(stats_Base):
     package_requirement_graph = Column(LargeBinary)
     package_author_graph = Column(LargeBinary)
 
+class Tarball(stats_Base):
+    __tablename__ = 'tarballs'
+    id = Column(Integer, primary_key=True)
+    build_id = Column(Integer, ForeignKey(Build.id))
+    build = relationship(Build, backref=backref('graphs', cascade='all, delete-orphan'))
+    # Tarballs yo, all dem tarballs
+    path = Column(String)
+    size = Column(Integer)
+
 json_engine = create_engine(config.db+'pypi-json')
 stats_engine = create_engine(config.db+'pypi-stats')
 json_Base.metadata.create_all(json_engine)
@@ -168,10 +177,9 @@ stats_Base.metadata.create_all(stats_engine)
 def make_session(engine, autoflush=True, autocommit=False, scoped=False):
     if not scoped:
 	    session = sessionmaker()
-	    session.configure(autoflush=autoflush, autocommit=autocommit, bind=engine)
     else:
         session = scoped_session(sessionmaker())
-        session.configure(autoflush=autoflush, autocommit=autocommit, bind=engine)
+    session.configure(autoflush=autoflush, autocommit=autocommit, bind=engine)
     return session()
 
 def insert_new(info, s):
