@@ -4,6 +4,11 @@ from ap import builder, db, config
 import multiprocessing
 import apscheduler
 from apscheduler.schedulers.background import BackgroundScheduler
+import logger
+
+logging.config.fileConfig(config.root_dir+'logging.conf')
+logger = logging.getLogger('Builder')
+
 scheduler = BlockingScheduler(jobstores={'apscheduler.jobstores.default': 
 	{'type': 'sqlalchemy',
 	'url': config.db+'builder-jobs'}},

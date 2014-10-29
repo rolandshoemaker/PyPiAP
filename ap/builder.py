@@ -7,9 +7,12 @@ from urllib.error import HTTPError
 from os.path import isfile, join
 from os import listdir, remove
 from sqlalchemy.orm import sessionmaker
-import datetime
+import datetime, logging
 
 from ap import db
+
+logging.config.fileConfig(config.root_dir+'logging.conf')
+logger = logging.getLogger('Builder')
 
 def get_distributions(simple_index='https://pypi.python.org/simple/'):
     """Gets a simple list of packages PyPi tracks."""
@@ -29,7 +32,7 @@ def get_pkg_json(dist):
                 contents = f.readall().decode('utf-8')
                 o.write(contents)
                 o.close()
-                print('[new] '+dist) # it's a new entry
+                logger.info('[new] '+dist) # it's a new entry
                 # run insert SQL stuff
                 # insert_new(json.loads(contents))
                 ins_queue.put(dist+'.json')
@@ -41,13 +44,13 @@ def get_pkg_json(dist):
                     o = open('/PyPiAP/json/'+dist+'.json', 'w')
                     o.write(b)
                     o.close()
-                    print('[update] '+dist) # it's an update to a already existing entry
+                    logger.info('[update] '+dist) # it's an update to a already existing entry
                     # run update SQL stuff
                     # update_old(json.loads(b))
                     upd_queue.put(dist+'.json')
                     return True
     except HTTPError:
-        print('[!] '+dist)
+        logger.error('[!] '+dist)
         return False
 
 def json_getter():
@@ -66,7 +69,7 @@ def clean_json_folder(pkg_list):
     for f in folder_list:
         if not f[:-5] in pkg_list:
             remove(join('/PyPiAP/json/',f))
-            print('[removed] '+f[:-5])
+            logger.info('[removed] '+f[:-5])
             # remove from sql
             del_queue.put(f[:-5])
             removed += 1
@@ -82,18 +85,18 @@ def resync(s):
     start_time = datetime.datetime.now()
 
     # Get simple package index
-    print("# Fetching Simple index.")
+    logger.info("# Fetching Simple index.")
     pkgs = get_distributions()
     index_len = len(pkgs)
     # Remove json files for packages that no longer exist
-    print("# Removing JSON files for dead packages.")
+    logger.info("# Removing JSON files for dead packages.")
     pkgs_removed = clean_json_folder(pkgs)
 
     for p in pkgs:
        pkg_queue.put(p)
 
     # Start json_getters
-    print("# Retreiving JSON files.")
+    logger.info("# Retreiving JSON files.")
     for i in range(worker_num):
        t = Thread(target=json_getter)
        t.daemon = True
@@ -115,7 +118,7 @@ def resync(s):
     # Insert new records
     ins_num = ins_queue.qsize
     if ins_queue.qsize > 0:
-        print("# Inserting records for new packages.")
+        logger.info("# Inserting records for new packages.")
         while True:
             f = ins_queue.get()
             o = open(join('/PyPiAP/json/',f), 'r')
@@ -131,7 +134,7 @@ def resync(s):
     # Update old records
     upd_num = upd_queue.qsize
     if upd_queue.qsize > 0:
-        print("# Updating records for old packages.")
+        logger.info("# Updating records for old packages.")
         while True:
             f = upd_queue.get()
             o = open(join('/PyPiAP/json/',f), 'r')
@@ -146,7 +149,7 @@ def resync(s):
 
     # Delete dead records
     if del_queue.qsize > 0:
-        print("# Deleting records for dead packages.")
+        logger.info("# Deleting records for dead packages.")
         while True:
             f = del_queue.get()
             db.remove_dead(f, s)
@@ -157,7 +160,7 @@ def resync(s):
 
     # This part should prob be multi-thread too... (but after the first one?)
     # Add requirement records for new packages
-    print("# Building requirement network.")
+    logger.info("# Building requirement network.")
     for j in json_list:
         db.new_requirements(j, s)
         s.commit()
@@ -169,7 +172,7 @@ def resync(s):
 
     s.close()
     end_time = datetime.datetime.now()
-    print("# Finished, runtime: "+str(end_time - start_time)+".")
+    logger.info("# Finished, runtime: "+str(end_time - start_time)+".")
 
     # Return stats about what we did done
     return {'index_count': index_len,

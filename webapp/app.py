@@ -2,9 +2,13 @@ from ap import db, config
 
 from flask import Flask, request, render_template, jsonify, url_for, Response
 import urllib.parse, dateutil.parser
+import logging
 
 # Maybe split front-end and api routes+stuff into different files? (not really sure how to do this)
 app = Flask(__name__)
+file_handler = logging.FileHandler(config.root_dir+'logs/flask.log')
+app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.INFO)
 s = db.make_session(db.stats_engine, scoped=True)
 
 # Front-end routes

@@ -6,3 +6,5 @@ ap/config.py
 graphs/
 gexf-js/
 *.dump
+logs/
+*.log
