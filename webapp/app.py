@@ -2,7 +2,7 @@ from ap import db, config
 
 from flask import Flask, request, render_template, jsonify, url_for, Response
 import urllib.parse, dateutil.parser
-from datetime.datetime import strptime
+
 # Maybe split front-end and api routes+stuff into different files? (not really sure how to do this)
 app = Flask(__name__)
 s = db.make_session(db.stats_engine, scoped=True)
@@ -12,7 +12,7 @@ s = db.make_session(db.stats_engine, scoped=True)
 def hello():
     return render_template('index.html')
 
-# API utilities
+# API utility functions
 @app.errorhandler(404)
 def not_found(error=None):
 	message = {
@@ -64,7 +64,7 @@ def api_build_analysis_to_json(build, prefix, normal_columns, big_columns):
 	for c in big_columns:
 		# check if expanded=true, if so show partially expanded big columns (still not full, useobject_pager defaults?!)
 		if request.args.get('expanded', None):
-			returner['analysis'][c] = {'url': config.url+prefix+'/'+c+'/'+build.build_id, 'object': api_object_pager(build.__dict__[c])}
+			returner['analysis'][c] = {'url': config.url+prefix+'/'+c+'/'+build.build_id, 'partial_object': api_object_pager(build.__dict__[c])}
 		else:
 			returner['analysis'][c] = {'url': config.url+prefix+'/'+c+'/'+build.build_id}
 
@@ -107,11 +107,11 @@ def api_general(build_id):
 	elif request.args.get('lazy_timeseries', None):
 		# lazy timeseries!
 		lazy_series = request.args.get('lazy_timeseries').split('-')
+		# prob wanna try/catch this for parsing errors
 		if not len(lazy_series) == 2 and (dateutil.parser.parse(lazy_series[0]) < 0 or dateutil.parser.parse(lazy_series[0]) >= lazdateutil.parser.parse(lazy_series[1])):
 			# bad lazy series!
 			return not_found() # definitely not right error code!
 		# timestamp format ISO 8601: 20130903T13:17:45Z
-		# prob wanna try/catch this for parsing errors
 		lazy_series = [dateutil.parser.parse(lazy_series[0]), dateutil.parser.parse(lazy_series[1])]
 		build_timestamps = s.query(db.Build.id, db.Build.build_timestamp).all()
 		low_time = min([b[1] for b in build_timestamps], key=lambda x:abs(x-lazy_series[0]))
