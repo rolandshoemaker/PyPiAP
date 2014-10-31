@@ -20,9 +20,10 @@ def rebuild():
 def web_server():
 	app.run()
 
-d = multiprocessing.Process(name='ap-web_server', target=web_server)
-d.daemon = True
-d.start()
+# running it as a wsgi atm so not needed!
+#d = multiprocessing.Process(name='ap-web_server', target=web_server)
+#d.daemon = True
+#d.start()
 
 scheduler.add_cron_job(rebuild,
 	jobstore="apschedulerJobs",

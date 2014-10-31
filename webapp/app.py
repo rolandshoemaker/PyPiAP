@@ -1,7 +1,8 @@
 from ap import db, config
 
 from flask import Flask, request, render_template, jsonify, url_for, Response
-import urllib.parse, dateutil.parser
+import urlparse
+import dateutil.parser
 import logging
 
 # Maybe split front-end and api routes+stuff into different files? (not really sure how to do this)
