@@ -34,11 +34,11 @@
           <a href="../../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../../http-routingtable.html" title="HTTP Routing Table"
-             >routing table</a> |</li>
-        <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
         <li><a href="../../index.html">.  documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -212,6 +212,15 @@
     <span class="n">package_requirement_graph</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">LargeBinary</span><span class="p">)</span>
     <span class="n">package_author_graph</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">LargeBinary</span><span class="p">)</span>
 </div>
+<div class="viewcode-block" id="Tarball"><a class="viewcode-back" href="../../ap.html#ap.db.Tarball">[docs]</a><span class="k">class</span> <span class="nc">Tarball</span><span class="p">(</span><span class="n">stats_Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s">&#39;tarballs&#39;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">build_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Build</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+    <span class="n">build</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="n">Build</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">backref</span><span class="p">(</span><span class="s">&#39;graphs&#39;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s">&#39;all, delete-orphan&#39;</span><span class="p">))</span>
+    <span class="c"># Tarballs yo, all dem tarballs</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+</div>
 <span class="n">json_engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="o">+</span><span class="s">&#39;pypi-json&#39;</span><span class="p">)</span>
 <span class="n">stats_engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="o">+</span><span class="s">&#39;pypi-stats&#39;</span><span class="p">)</span>
 <span class="n">json_Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">json_engine</span><span class="p">)</span>
@@ -220,10 +229,9 @@
 <div class="viewcode-block" id="make_session"><a class="viewcode-back" href="../../ap.html#ap.db.make_session">[docs]</a><span class="k">def</span> <span class="nf">make_session</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">autoflush</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">scoped</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">scoped</span><span class="p">:</span>
 	    <span class="n">session</span> <span class="o">=</span> <span class="n">sessionmaker</span><span class="p">()</span>
-	    <span class="n">session</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">autoflush</span><span class="o">=</span><span class="n">autoflush</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="n">autocommit</span><span class="p">,</span> <span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">session</span> <span class="o">=</span> <span class="n">scoped_session</span><span class="p">(</span><span class="n">sessionmaker</span><span class="p">())</span>
-        <span class="n">session</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">autoflush</span><span class="o">=</span><span class="n">autoflush</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="n">autocommit</span><span class="p">,</span> <span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">autoflush</span><span class="o">=</span><span class="n">autoflush</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="n">autocommit</span><span class="p">,</span> <span class="n">bind</span><span class="o">=</span><span class="n">engine</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">session</span><span class="p">()</span>
 </div>
 <div class="viewcode-block" id="insert_new"><a class="viewcode-back" href="../../ap.html#ap.db.insert_new">[docs]</a><span class="k">def</span> <span class="nf">insert_new</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
@@ -448,18 +456,18 @@
           <a href="../../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../../http-routingtable.html" title="HTTP Routing Table"
-             >routing table</a> |</li>
-        <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="../../http-routingtable.html" title="HTTP Routing Table"
+             >routing table</a> |</li>
         <li><a href="../../index.html">.  documentation</a> &raquo;</li>
           <li><a href="../index.html" >Module code</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2014, roland.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

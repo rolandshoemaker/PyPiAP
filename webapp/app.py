@@ -1,7 +1,7 @@
 from ap import db, config
 
 from flask import Flask, request, render_template, jsonify, url_for, Response
-import urlparse
+#import urlparse
 import dateutil.parser
 import logging
 
