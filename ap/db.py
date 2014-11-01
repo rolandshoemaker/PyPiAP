@@ -3,11 +3,14 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, update, func
 from sqlalchemy.orm import sessionmaker, scoped_session
-import datetime
+import datetime, logging
 from time import strptime
 
 from ap import config
 from ap.utils import peeper
+
+logging.config.fileConfig(config.root_dir+'logging.conf')
+logger = logging.getLogger('Builder')
 
 # JSON decomp tables
 json_Base = declarative_base()
@@ -219,7 +222,7 @@ def insert_new(info, s):
                 downloads=info['releases'][version][i]['downloads'],
                 package=package)
             s.add(release)
-    print('[sql:insert] inserted records for '+package.name)
+    logger.info('[sql:insert] inserted records for '+package.name)
 
 def new_requirements(info, s):
     """Insert new set of requirement records for a package, should be done after full package index is built."""
@@ -246,7 +249,7 @@ def new_requirements(info, s):
                         s.add(req)
                     except ValueError:
                         pass
-    print('[sql:insert] inserted requirements for '+info['info']['name'])
+    logger.info('[sql:insert] inserted requirements for '+info['info']['name'])
 
 def update_requirements(info, s):
 	# since we are just nuking requirements lets just pass this through now
@@ -303,13 +306,13 @@ def update_old(info, s):
                 package=package)
             s.add(release)
 
-    print('[sql:update] updated records for '+package.name)
+    logger.info('[sql:update] updated records for '+package.name)
 
 def remove_dead(pkg_name, s):
     """Remove records for a package that's disappeared."""
     package = s.query(Package).filter(Package.name==pkg_name).first()
     s.delete(package)
-    print('[sql:drop] removed records for '+pkg_name)
+    logger.info('[sql:drop] removed records for '+pkg_name)
 
 def insert_build(resync_results, analysis_results, s):
     build = db.Build(rebuild_duration=resync_results['runtime'],
@@ -321,7 +324,7 @@ def insert_build(resync_results, analysis_results, s):
         packages_updated=resync_results['packages_updated'],
         packages_removed=resync_results['packages_removed'])
     s.add(build)
-    print('[sql:insert] inserted new build #'+str(build.id))
+    logger.info('[sql:insert] inserted new build #'+str(build.id))
 
     # General
     general_analaysis = db.General_nalysis(build=build,
@@ -372,4 +375,4 @@ def insert_build(resync_results, analysis_results, s):
         package_requirement_graph=analysis_results['package_requirement_graph'],
         package_author_graph=analysis['package_author_graph'])
     s.add(graph_analysis)
-    print('[sql:insert] inserted analysis tables for build #'+str(build.id))
+    logger.info('[sql:insert] inserted analysis tables for build #'+str(build.id))

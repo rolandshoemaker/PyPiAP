@@ -23,7 +23,6 @@ def search_setup(text):
 				install_line = re.sub('\s+|\n|#', '', text[startpos:endpos])
 				return ast.literal_eval('['+install_line+']') or []
 			else:
-				print([text[startpos], text[endpos]])
 				return []
 		else:
 			return []

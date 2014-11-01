@@ -53,7 +53,7 @@ def api_pager(ids, route=None, offset=0, limit=20, links=True):
 				limit = thing_length
 
 			if offset+limit > thing_length:
-				return bad_request('offset + limit is more than the resource length') # bail since asking for range thats not existy, better error code..?
+				return bad_request('offset ('+offset+') + limit ('+limit+') is more than the resource length') # bail since asking for range thats not existy, better error code..?
 
 			next_page = ['', 'next']
 			prev_page = ['', 'last']

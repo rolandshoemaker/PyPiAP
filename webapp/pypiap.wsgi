@@ -1,3 +1,4 @@
 import sys
-sys.path.insert(0, '/PyPiAP/')
+from ap import config
+sys.path.insert(0, config.root_dir)
 from webapp.app import app as application
