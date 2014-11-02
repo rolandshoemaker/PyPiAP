@@ -196,29 +196,29 @@ def api_v1_general_home_page_domains(build_id):
 # Authors
 @app.route('/api/v1/authors')
 def api_v1_authors():
-	normal = []
-	objects = []
+	normal = ['unique_authors', 'multiple_authors']
+	objects = ['top_authors', 'author_email_domains']
 	api_analysis_table('/api/v1/authors', db.Author_analysis, normal, objects)
 
 # Classifiers
 @app.route('/api/v1/classifiers')
 def api_v1_classifiers():
 	normal = []
-	objects = []
+	objects = ['top_classifiers', 'framework_size_by_classifier', 'nonpython_pkgs', 'natural_language_distribution']
 	api_analysis_table('/api/v1/classifiers', db.Classifier_analysis, normal, objects)
 
 # Releases
 @app.route('/api/v1/releases')
 def api_v1_releases():
-	normal = []
-	objects = []
+	normal = ['total_releases', 'current_releases', 'average_download_per_release', 'all_releases_size', 'current_releases_size', 'average_release_size', 'average_release_interval', 'average_release_age']
+	objects = ['major_version_distribution']
 	api_analysis_table('/api/v1/releases', db.Release_analysis, normal, objects)
 
 # Requirements
 @app.route('/api/v1/requirements')
 def api_v1_requirements():
 	normal = []
-	objects = []
+	objects = ['strong_weak_package_connections', 'packages_with_selfloops']
 	api_analysis_table('/api/v1/requirements', db.Requirement_analysis, normal, objects)
 
 # Tarballs
