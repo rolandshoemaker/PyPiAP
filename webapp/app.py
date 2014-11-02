@@ -40,7 +40,7 @@ def bad_request(error=None):
 	resp.status_code = 400
 	return resp
 
-def api_pager(ids, route=None, offset=0, limit=20, links=True):
+def api_pager(ids, route=None, offset=0, limit=20, links=True, direct=False):
 	if not 'X-Total-Count' in request.headers:
 		thing_length = len(ids)-1 # does this need to be -1?
 		if links and route:
@@ -55,6 +55,7 @@ def api_pager(ids, route=None, offset=0, limit=20, links=True):
 			if offset+limit > thing_length:
 				return bad_request('offset ('+str(offset)+') + limit ('+str(limit)+') is more than the resource length ('+str(thing_length)+')') # bail since asking for range thats not existy, better error code..?
 
+			# still need to do this!
 			next_page = ['', 'next']
 			prev_page = ['', 'last']
 
@@ -62,8 +63,10 @@ def api_pager(ids, route=None, offset=0, limit=20, links=True):
 			return ids[offset:offset+limit], paged_links
 		else:
 			return ids[offset:offset+limit]
-	else:
+	elif links and route:
 		return ids, None
+	else:
+		return ids
 
 def api_object_pager(thing, route=None, offset=0, limit=20, links=False):
 	# monkey-patch, this is not what this is meant for whoopsy lol
@@ -94,9 +97,67 @@ def api_build_analysis_to_json(build, prefix, normal_columns, big_columns):
 
 	return returner
 
-def api_analysis_table():
-	# populate from api_general prototype
-	pass
+def api_analysis_table(route, model, normal, objects):
+	# two args, buildseries for build_id to build_id, and lazy_timeseries from generating build_ids from timestamp to timestamp
+	if request.args.get('buildseries', None) and not build_id:
+		# time series!
+		offset = request.args.get('offset', 0)
+		limit = request.args.get('limit', 20)
+		timeseries_ids = request.args.get('buildseries').split('-')
+		if not len(timeseries_ids) == 2 and (timeseries_ids[0] < 0 or timeseries_ids[0] >= timeseries_ids[1]):
+			# bad timeseries!
+			return bad_request('Invalid build_id series')
+		paged_ids, paged_links = api_pager(range(timeseries_ids[0], timeseries_ids[1]+1), route, offset, limit)
+		general_analysis = [s.query(model).filter(model.build_id==tid).first() for tid in paged_ids]
+	elif request.args.get('lazy_timeseries', None):
+		# lazy timeseries!
+		lazy_series = request.args.get('lazy_timeseries').split('-')
+		# prob wanna try/catch this for parsing errors
+		if not len(lazy_series) == 2 and (dateutil.parser.parse(lazy_series[0]) < 0 or dateutil.parser.parse(lazy_series[0]) >= lazdateutil.parser.parse(lazy_series[1])):
+			# bad lazy series!
+			return bad_request('Invalid lazy timeseries')
+		# timestamp format ISO 8601: 20130903T13:17:45Z
+		lazy_series = [dateutil.parser.parse(lazy_series[0]), dateutil.parser.parse(lazy_series[1])]
+		build_timestamps = s.query(db.Build.id, db.Build.build_timestamp).all()
+		low_time = min([b[1] for b in build_timestamps], key=lambda x:abs(x-lazy_series[0]))
+		low_id = [b[0] for b in build_timestamps if b[1] == low_time][0]
+		high_time = min([b[1] for b in build_timestamps], key=lambda x:abs(x-lazy_series[1]))
+		high_id = [b[0] for b in build_timestamps if b[1] == high_time][0]
+		paged_ids, paged_links = api_pager(range(low_id, high_id+1), route, offset, limit)
+		general_analysis = [s.query(model).filter(model.build_id==tid).first() for tid in paged_ids]
+	elif not build_id:
+		# no args at all! return most recent build
+		general_analysis = [s.query(model).order_by('-id').first()]
+	elif build_id:
+		# build id specified, return it
+		general_analysis = [s.query(model).filter(model.build_id==build_id).first()]
+		if len(general_analysis) == 0:
+			return bad_request('Invalid build_id')
+	else:
+		# idk what happened...
+		return not_found()
+
+	if len(general_analysis) < 1:
+		# bad build_id or something, probably better error code? mb not tho
+		return not_found()
+	else:
+		stuff = [api_build_analysis_to_json(i, route, normal, objects) for i in general_analysis]
+		if request.args.get('sort', None):
+			sorters = request.args.get('sort')
+			for sorter in reversed(sorters):
+				reverse = True # default to descending list
+				if sorter.startswith('+'):
+					# oh you want aescending... fine
+					reverse = False
+				try:
+					stuff.sort(key=lambda x:x.analysis.__dict__[sorter], reverse=reverse)
+				except KeyError:
+					# bad query!
+					return bad_request(sorter+' is a invalid sort key')
+		resp = jsonify(stuff)
+		resp.status_code = 200
+		if paged_links: resp.headers['Link'] = paged_links
+		return resp
 
 # API routes
 # return all the top level resources
@@ -115,67 +176,7 @@ def api_v1_index():
 def api_v1_general(build_id):
 	normal = ['no_releases', 'no_url', 'total_downloads', 'total_current_downloads', 'downloads_last_day', 'downloads_last_week', 'downloads_last_month']
 	objects = ['top_required_packages', 'named_ecosystems', 'home_page_domains']
-
-	# two args, buildseries for build_id to build_id, and lazy_timeseries from generating build_ids from timestamp to timestamp
-	if request.args.get('buildseries', None) and not build_id:
-		# time series!
-		offset = request.args.get('offset', 0)
-		limit = request.args.get('limit', 20)
-		timeseries_ids = request.args.get('buildseries').split('-')
-		if not len(timeseries_ids) == 2 and (timeseries_ids[0] < 0 or timeseries_ids[0] >= timeseries_ids[1]):
-			# bad timeseries!
-			return bad_request('Invalid build_id series')
-		paged_ids, paged_links = api_pager(range(timeseries_ids[0], timeseries_ids[1]+1), '/api/v1/general', offset, limit)
-		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in paged_ids]
-	elif request.args.get('lazy_timeseries', None):
-		# lazy timeseries!
-		lazy_series = request.args.get('lazy_timeseries').split('-')
-		# prob wanna try/catch this for parsing errors
-		if not len(lazy_series) == 2 and (dateutil.parser.parse(lazy_series[0]) < 0 or dateutil.parser.parse(lazy_series[0]) >= lazdateutil.parser.parse(lazy_series[1])):
-			# bad lazy series!
-			return bad_request('Invalid lazy timeseries')
-		# timestamp format ISO 8601: 20130903T13:17:45Z
-		lazy_series = [dateutil.parser.parse(lazy_series[0]), dateutil.parser.parse(lazy_series[1])]
-		build_timestamps = s.query(db.Build.id, db.Build.build_timestamp).all()
-		low_time = min([b[1] for b in build_timestamps], key=lambda x:abs(x-lazy_series[0]))
-		low_id = [b[0] for b in build_timestamps if b[1] == low_time][0]
-		high_time = min([b[1] for b in build_timestamps], key=lambda x:abs(x-lazy_series[1]))
-		high_id = [b[0] for b in build_timestamps if b[1] == high_time][0]
-		paged_ids, paged_links = api_pager(range(low_id, high_id+1), '/api/v1/general', offset, limit)
-		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in paged_ids]
-	elif not build_id:
-		# no args at all! return most recent build
-		general_analysis = [s.query(db.General_analysis).order_by('-id').first()]
-	elif build_id:
-		# build id specified, return it
-		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==build_id).first()]
-		if len(general_analysis) == 0:
-			return bad_request('Invalid build_id')
-	else:
-		# idk what happened...
-		return not_found()
-
-	if len(general_analysis) < 1:
-		# bad build_id or something, probably better error code? mb not tho
-		return not_found()
-	else:
-		stuff = [api_build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis]
-		if request.args.get('sort', None):
-			sorters = request.args.get('sort')
-			for sorter in reversed(sorters):
-				reverse = True # default to descending list
-				if sorter.startswith('+'):
-					# oh you want aescending... fine
-					reverse = False
-				try:
-					stuff.sort(key=lambda x:x.analysis.__dict__[sorter], reverse=reverse)
-				except KeyError:
-					# bad query!
-					return bad_request(sorter+' is a invalid sort key')
-		resp = jsonify(stuff)
-		resp.status_code = 200
-		if paged_links: resp.headers['Link'] = paged_links
-		return resp
+	api_analysis_table('/api/v1/general', db.General_analysis, normal, objects)
 
 @app.route('/api/v1/general/top_required_packages', defaults={'build_id': None})
 @app.route('/api/v1/general/top_required_packages/<int:build_id>')
@@ -195,22 +196,30 @@ def api_v1_general_home_page_domains(build_id):
 # Authors
 @app.route('/api/v1/authors')
 def api_v1_authors():
-	pass
+	normal = []
+	objects = []
+	api_analysis_table('/api/v1/authors', db.Author_analysis, normal, objects)
 
 # Classifiers
 @app.route('/api/v1/classifiers')
 def api_v1_classifiers():
-	pass
+	normal = []
+	objects = []
+	api_analysis_table('/api/v1/classifiers', db.Classifier_analysis, normal, objects)
 
 # Releases
 @app.route('/api/v1/releases')
 def api_v1_releases():
-	pass
+	normal = []
+	objects = []
+	api_analysis_table('/api/v1/releases', db.Release_analysis, normal, objects)
 
 # Requirements
 @app.route('/api/v1/requirements')
 def api_v1_requirements():
-	pass
+	normal = []
+	objects = []
+	api_analysis_table('/api/v1/requirements', db.Requirement_analysis, normal, objects)
 
 # Tarballs
 @app.route('/api/v1/tarballs')
