@@ -7,7 +7,7 @@ from urllib.error import HTTPError
 from os.path import isfile, join
 from os import listdir, remove
 from sqlalchemy.orm import sessionmaker
-import datetime, logging
+import datetime, logging.config
 
 from ap import db, config
 

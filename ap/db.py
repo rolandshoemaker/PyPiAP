@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, update, func
 from sqlalchemy.orm import sessionmaker, scoped_session
-import datetime, logging
+import datetime, logging.config
 from time import strptime
 
 from ap import config
@@ -113,9 +113,9 @@ class Author_analysis(stats_Base):
     build_id = Column(Integer, ForeignKey(Build.id))
     build = relationship(Build, backref=backref('authors', cascade='all, delete-orphan'))
     # Authors
-    top_authors = Column(PickleType)
     unique_authors = Column(Integer)
     multiple_authors = Column(Integer)
+    top_authors = Column(PickleType)
     author_email_domains = Column(PickleType)
 
 class Classifier_analysis(stats_Base):
@@ -138,12 +138,12 @@ class Release_analysis(stats_Base):
     total_releases = Column(Integer)
     current_releases = Column(Integer)
     average_download_per_release = Column(Integer)
-    major_version_distribution = Column(PickleType)
     all_releases_size = Column(Integer)
     current_releases_size = Column(Integer)
     average_release_size = Column(Integer)
     average_release_interval = Column(Interval)
     average_release_age = Column(Interval)
+    major_version_distribution = Column(PickleType)
 
 class Requirements_analysis(stats_Base):
     __tablename__ = 'requirement_analysis'
