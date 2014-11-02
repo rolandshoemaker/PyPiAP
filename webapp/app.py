@@ -53,7 +53,7 @@ def api_pager(ids, route=None, offset=0, limit=20, links=True):
 				limit = thing_length
 
 			if offset+limit > thing_length:
-				return bad_request('offset ('+offset+') + limit ('+limit+') is more than the resource length') # bail since asking for range thats not existy, better error code..?
+				return bad_request('offset ('+str(offset)+') + limit ('+str(limit)+') is more than the resource length ('+str(thing_length)+')') # bail since asking for range thats not existy, better error code..?
 
 			next_page = ['', 'next']
 			prev_page = ['', 'last']
@@ -86,7 +86,7 @@ def api_build_analysis_to_json(build, prefix, normal_columns, big_columns):
 		returner['analysis'][c] = build.__dict__[c]
 
 	for c in big_columns:
-		# check if expanded=true, if so show partially expanded big columns (still not full, useobject_pager defaults?!)
+		# check if expanded=true, if so show partially expanded big columns
 		if request.args.get('expanded', None):
 			returner['analysis'][c] = {'url': config.url+prefix+'/'+c+'/'+build.build_id, 'partial_object': api_object_pager(build.__dict__[c])}
 		else:
@@ -101,7 +101,7 @@ def api_analysis_table():
 # API routes
 # return all the top level resources
 @app.route('/api/v1/')
-def api_index():
+def api_v1_index():
 	resources = {'url': config.url+'/api/v1', 'resources': {}}
 	endpoints = [config.url+str(i) for i in app.url_map.iter_rules() if str(i).startswith('/api/v1/') and len(str(i).split('/')) == 4]
 	for e in endpoints:
@@ -112,20 +112,19 @@ def api_index():
 # General
 @app.route('/api/v1/general', defaults={'build_id': None})
 @app.route('/api/v1/general/<int:build_id>')
-def api_general(build_id):
+def api_v1_general(build_id):
 	normal = ['no_releases', 'no_url', 'total_downloads', 'total_current_downloads', 'downloads_last_day', 'downloads_last_week', 'downloads_last_month']
 	objects = ['top_required_packages', 'named_ecosystems', 'home_page_domains']
 
-	# allow time series query here (mb decorator), if no query return most recent build
-	# two args, timeseries for build_id to build_id, and lazy_timeseries from generating build_ids from timestamp to timestamp
-	if request.args.get('timeseries', None) and not build_id:
+	# two args, buildseries for build_id to build_id, and lazy_timeseries from generating build_ids from timestamp to timestamp
+	if request.args.get('buildseries', None) and not build_id:
 		# time series!
 		offset = request.args.get('offset', 0)
 		limit = request.args.get('limit', 20)
-		timeseries_ids = request.args.get('timeseries').split('-')
+		timeseries_ids = request.args.get('buildseries').split('-')
 		if not len(timeseries_ids) == 2 and (timeseries_ids[0] < 0 or timeseries_ids[0] >= timeseries_ids[1]):
 			# bad timeseries!
-			return bad_request('Invalid timeseries')
+			return bad_request('Invalid build_id series')
 		paged_ids, paged_links = api_pager(range(timeseries_ids[0], timeseries_ids[1]+1), '/api/v1/general', offset, limit)
 		general_analysis = [s.query(db.General_analysis).filter(db.Build.id==tid).first() for tid in paged_ids]
 	elif request.args.get('lazy_timeseries', None):
@@ -134,7 +133,7 @@ def api_general(build_id):
 		# prob wanna try/catch this for parsing errors
 		if not len(lazy_series) == 2 and (dateutil.parser.parse(lazy_series[0]) < 0 or dateutil.parser.parse(lazy_series[0]) >= lazdateutil.parser.parse(lazy_series[1])):
 			# bad lazy series!
-			return bad_request('Invalid lazy_timeseries') # definitely not right error code!
+			return bad_request('Invalid lazy timeseries')
 		# timestamp format ISO 8601: 20130903T13:17:45Z
 		lazy_series = [dateutil.parser.parse(lazy_series[0]), dateutil.parser.parse(lazy_series[1])]
 		build_timestamps = s.query(db.Build.id, db.Build.build_timestamp).all()
@@ -157,7 +156,7 @@ def api_general(build_id):
 		return not_found()
 
 	if len(general_analysis) < 1:
-		# bad build_id or something, probably better error code?
+		# bad build_id or something, probably better error code? mb not tho
 		return not_found()
 	else:
 		stuff = [api_build_analysis_to_json(i, '/api/v1/general', normal, objects) for i in general_analysis]
@@ -180,42 +179,42 @@ def api_general(build_id):
 
 @app.route('/api/v1/general/top_required_packages', defaults={'build_id': None})
 @app.route('/api/v1/general/top_required_packages/<int:build_id>')
-def api_general_top_required_packages(build_id):
+def api_v1_general_top_required_packages(build_id):
 	pass
 
 @app.route('/api/v1/general/named_ecosystems', defaults={'build_id': None})
 @app.route('/api/v1/general/named_ecosystems/<int:build_id>')
-def api_general_named_ecosystems(build_id):
+def api_v1_general_named_ecosystems(build_id):
 	pass
 
 @app.route('/api/v1/general/home_page_domains', defaults={'build_id': None})
 @app.route('/api/v1/general/home_page_domains/<int:build_id>')
-def api_general_home_page_domains(build_id):
+def api_v1_general_home_page_domains(build_id):
 	pass
 
 # Authors
 @app.route('/api/v1/authors')
-def api_authors():
+def api_v1_authors():
 	pass
 
 # Classifiers
 @app.route('/api/v1/classifiers')
-def api_classifiers():
+def api_v1_classifiers():
 	pass
 
 # Releases
 @app.route('/api/v1/releases')
-def api_releases():
+def api_v1_releases():
 	pass
 
 # Requirements
 @app.route('/api/v1/requirements')
-def api_requirements():
+def api_v1_requirements():
 	pass
 
 # Tarballs
 @app.route('/api/v1/tarballs')
-def api_tarballs():
+def api_v1_tarballs():
 	pass
 
 if __name__ == '__main__':
